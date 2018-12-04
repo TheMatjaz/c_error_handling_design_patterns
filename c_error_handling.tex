@@ -1,0 +1,67 @@
+\documentclass[pdf]{beamer}
+\mode<presentation>
+
+\usepackage[utf8]{inputenc} 
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+
+\usepackage{xcolor} 
+\definecolor{codegreen}{RGB}{0, 70, 0}
+\definecolor{codegray}{RGB}{90, 90, 90}
+\definecolor{codepurple}{RGB}{100, 0, 120}
+\definecolor{codeblue}{RGB}{100, 0, 200}
+\definecolor{codebackground}{RGB}{250, 250, 250}
+ 
+\usepackage{listings}
+\lstdefinestyle{cstyle}{
+    basicstyle=\ttfamily,
+    backgroundcolor=\color{codebackground},   
+    commentstyle=\color{codegray},
+    keywordstyle=\bf\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\bf\color{codegreen},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4
+}
+\lstset{style=cstyle}
+
+\setbeamertemplate{navigation symbols}{}  % Hide navigation symbols
+\usefonttheme{structurebold}
+
+\title{Error handling patterns\\in non-OOP languages}
+\subtitle{Namely in ISO C}
+\author{Matjaž Guštin}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}[fragile]{Snippet}
+\begin{lstlisting}[language=C,style=cstyle]
+int main(void)
+{
+    puts("Hello world!");
+    // A comment
+    /* Another comment */
+    for (char i = 0; ; i++)
+    {
+        do { puts(); } while(1);
+    }
+    return 0;
+}
+\end{lstlisting}
+\end{frame}
+
+
+\end{document}
