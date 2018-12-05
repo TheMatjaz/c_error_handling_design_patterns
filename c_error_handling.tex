@@ -175,14 +175,20 @@ int receive_message(message_t* message);
         \item[\texttt{true}] (or non-0) on success
         \item[\texttt{false}] (or 0) on failure
     \end{description}
-    
-    \begin{block}{Consequences}
-        Why did it fail? Can we retry or not? Can we tune the receving settings based on the error? Does \texttt{false} indicate \quotes{no error} or \quotes{no success}?
-    \end{block}
 \end{frame}
 
 
-\begin{frame}[fragile]{Usage examples: boolean code}
+\begin{frame}[fragile]{Boolean return code: consequences}
+    \begin{itemize}
+        \item Why did it fail?
+        \item Can we retry or not?
+        \item Can we tune the receving settings based on the error?
+        \item Does \texttt{false} indicate \quotes{no error} or \quotes{no success}?
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]{Boolean return code: usage examples}
 \begin{lstlisting}[style=cstyle]
 message_t rx_message;
 if (!receive_message(&rx_message)) {
@@ -218,20 +224,26 @@ rx_code_t receive_message(message_t* message);
     \item[\texttt{RX\_OK}] on success. OK is (\texttt{false}) to indicate the \textit{absence} of errors.
     \item[Others] on failure
 \end{description}
+\end{frame}
 
-\begin{block}{Consequences}
-    Cleaner setup. Multiple failure possibilities, only one success.
-\end{block}
+
+\begin{frame}[fragile]{Error code: consequences}
+    \begin{itemize}
+        \item Cleaner setup
+        \item We can handle different failure cases in different ways
+        \item Easy to remember which value is the success: the \texttt{false} value
+        \item Longer code handling the cases
+    \end{itemize}
 \end{frame}
 
 
 \begin{frame}[fragile]{Usage examples: error code}
 \begin{lstlisting}[style=cstyle]
 message_t rx_message;
-rx_code_t rx_code;
+rx_code_t error;
 
-rx_code = receive_message(&rx_message);
-if (rx_code != RX_OK) {
+error = receive_message(&rx_message);
+if (error) {  // error != RX_OK
     puts("Reception failure");
 }
 \end{lstlisting}
@@ -289,11 +301,18 @@ enum status_code_t {
 
 status_code_t process_message(message_t* message);
 \end{lstlisting}
-
-\begin{block}{Consequences}
-    May be useful when there are multiple ways to complete a task (Strategy) and we need to know which one was used. Easily confusing. Often macros are used to group "OK" states, which results in a regular error code. Flags may be better.
-\end{block}
 \end{frame}
+
+
+\begin{frame}[fragile]{Status code: consequences}
+\begin{itemize}
+    \item Multiple ways to complete a task (Strategy) and we known which one was chosen
+    \item We can handle different success cases in different ways
+    \item May be confusing
+    \item Ofter macros are used to group \quotes{OK}-states, which results in a regular error code
+\end{itemize}
+\end{frame}
+
 
 \begin{frame}[fragile]{Cleaner setup}
 \begin{lstlisting}[style=cstyle]
@@ -311,13 +330,45 @@ enum status_extra_t {
 
 error_code_t process_message(message_t* message,
                              status_extra_t* extra);
-\end{lstlisting}}
-
-\begin{block}{Consequences}
-    Two values to handle. What is the value of \texttt{extra} if an error happens during processing?
-\end{block}
+\end{lstlisting}
 \end{frame}
 
+
+\begin{frame}[fragile]{Cleaner setup: consequences}
+    \begin{itemize}
+        \item Now we need to handle two values instead of one
+        \item What is the value of \texttt{extra} if an error happens during processing?
+        \item What happens if I pass a \texttt{NULL} pointer for \texttt{extra}?
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]{errno.h}
+\begin{lstlisting}[style=cstyle]
+#include <stdio.h>
+#include <errno.h>   // To access the integer `errno`
+#include <string.h>  // To convert `errno` to a human-readable string with strerror
+
+int main() {
+    printf("At startup: %s\n", strerror(errno));
+    FILE *file = fopen("NON_existing_file.txt", "r");
+    if (file == NULL) {
+        printf("After fopen fails: %s\n", strerror(errno));
+    } else {
+        fclose(file);
+    }
+    return 0;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{errno.h (cont.)}
+\begin{lstlisting}[style=nostyle]
+$ gcc errno_example.c -o errno_example && ./errno_example
+At startup: Undefined error: 0
+After fopen fails: No such file or directory
+\end{lstlisting}
+\end{frame}
 
 
 \section{Other error signaling systems}
