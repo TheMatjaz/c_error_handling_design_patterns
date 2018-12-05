@@ -134,14 +134,9 @@ def update_software():
 \begin{frame}{Overview of the patterns}
     \begin{enumerate}
         \item Return codes
-            \begin{enumerate}
-                \item Boolean codes
-                \item Error codes
-                \item Status codes
-                \item As output argument
-            \end{enumerate}
         \item Return indicator of work done
         \item Return impossible value
+        \item Output function parameters
         \item NULL pointers
         \item Floating point values
         \item \texttt{<errno.h>} and global error codes
@@ -152,6 +147,19 @@ def update_software():
 
 
 \section{Return codes}
+
+\begin{frame}{Return codes}
+\begin{itemize}
+    \item The function's return value indicate its execution success or failure
+    \item Different levels of detail in the output
+    \item A potential way to categorize them\footnote{This is just my proposal, as often all these terms are used as synonyms}
+    \begin{enumerate}
+        \item Boolean codes
+        \item Error codes
+        \item Status/state codes
+    \end{enumerate}
+\end{itemize}
+\end{frame}
 
 \begin{frame}[fragile]{Boolean return code}
 \begin{lstlisting}[style=cstyle]
@@ -168,10 +176,148 @@ int receive_message(message_t* message);
         \item[\texttt{false}] (or 0) on failure
     \end{description}
     
-    \begin{block}{The issue}
-        Why did it fail? Can we retry or not? Can we tune the receving settings based on the error?
+    \begin{block}{Consequences}
+        Why did it fail? Can we retry or not? Can we tune the receving settings based on the error? Does \texttt{false} indicate \quotes{no error} or \quotes{no success}?
     \end{block}
 \end{frame}
+
+
+\begin{frame}[fragile]{Usage examples: boolean code}
+\begin{lstlisting}[style=cstyle]
+message_t rx_message;
+if (!receive_message(&rx_message)) {
+    puts("Reception failure");
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=cstyle]
+message_t rx_message;
+while (!receive_message(&rx_message)) {
+    sleep(5);
+}
+\end{lstlisting}
+
+Hard to remember if the negation is needed or not.
+\end{frame}
+
+
+\begin{frame}[fragile]{Error code}
+\begin{lstlisting}[style=cstyle]
+enum rx_code_t {
+    RX_OK = 0,
+    ERROR_TIMEOUT_NOTHING_RECEIVED,
+    ERROR_BROKEN_CRC,
+    ERROR_INCOMPLETE_MESSAGE,
+    ERROR_RECEIVER_NOT_CONNECTED,
+}
+
+rx_code_t receive_message(message_t* message);
+\end{lstlisting}
+
+\begin{description}
+    \item[\texttt{RX\_OK}] on success. OK is (\texttt{false}) to indicate the \textit{absence} of errors.
+    \item[Others] on failure
+\end{description}
+
+\begin{block}{Consequences}
+    Cleaner setup. Multiple failure possibilities, only one success.
+\end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]{Usage examples: error code}
+\begin{lstlisting}[style=cstyle]
+message_t rx_message;
+rx_code_t rx_code;
+
+rx_code = receive_message(&rx_message);
+if (rx_code != RX_OK) {
+    puts("Reception failure");
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=cstyle]
+message_t rx_message;
+rx_code_t rx_code;
+
+if ((rx_code = receive_message(&rx_message)) != RX_OK) {
+    puts("Reception failure");
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{}
+\begin{lstlisting}[style=cstyle,basicstyle=\scriptsize\ttfamily]
+message_t rx_message;
+rx_code_t rx_code;
+bool keep_receiving = true;
+
+do {
+    rx_code = receive_message(&rx_message);
+    switch (rx_code) {
+        case (RX_OK): {
+            process_message(&rx_message);
+            break;
+        }
+        case (ERROR_TIMEOUT_NOTHING_RECEIVED) {
+            sleep(5);
+            break;
+        }
+        case (ERROR_RECEIVER_NOT_CONNECTED) {
+            puts("Please connect the receiver to the PC");
+            keep_receiving = false;
+            break;
+        }
+        default: {} // Do nothing, just retry the reception.
+    }
+} while (keep_receiving);
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]{Status code}
+\begin{lstlisting}[style=cstyle]
+enum status_code_t {
+    STATUS_OK_DETERMINISTIC = 0,
+    STATUS_OK_PROBABILISTIC_HIGH_PROB,
+    STATUS_OK_PROBABILISTIC_LOW_PROB,
+    STATUS_ERROR_ILLEGAL_HEADER,
+    STATUS_ERROR_ILLEGAL_CONTENT,
+    STATUS_ERROR_ILLEGAL_ENCODING,
+}
+#define STATUS_IS_OK(s) ((s) == STATUS_OK_DETERMINISTIC || (s) == STATUS_OK_PROBABILISTIC_HIGH_PROB || (s) == STATUS_OK_PROBABILISTIC_LOW_PROB )
+
+status_code_t process_message(message_t* message);
+\end{lstlisting}
+
+\begin{block}{Consequences}
+    May be useful when there are multiple ways to complete a task (Strategy) and we need to know which one was used. Easily confusing. Often macros are used to group "OK" states, which results in a regular error code. Flags may be better.
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Cleaner setup}
+\begin{lstlisting}[style=cstyle]
+enum error_code_t {
+    STATUS_OK = 0,
+    STATUS_ERROR_ILLEGAL_HEADER,
+    STATUS_ERROR_ILLEGAL_CONTENT,
+    STATUS_ERROR_ILLEGAL_ENCODING,
+}
+enum status_extra_t {
+    STATUS_EXTRA_DETERMINISTIC = 0,
+    STATUS_EXTRA_PROBABILISTIC_HIGH_PROB,
+    STATUS_EXTRA_PROBABILISTIC_LOW_PROB,
+}
+
+error_code_t process_message(message_t* message,
+                             status_extra_t* extra);
+\end{lstlisting}}
+
+\begin{block}{Consequences}
+    Two values to handle. What is the value of \texttt{extra} if an error happens during processing?
+\end{block}
+\end{frame}
+
 
 
 \section{Other error signaling systems}
