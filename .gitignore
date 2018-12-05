@@ -1,6 +1,11 @@
 *.aux
 *.log
+*.nav
 *.out
+*.pdf
+*.snm
 *.synctex.gz
 *.bak
-*.pdf
+*.toc
+*.vrb
+build/
