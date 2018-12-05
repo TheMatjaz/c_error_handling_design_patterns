@@ -25,15 +25,47 @@
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
 
-\mode<presentation>
-
-\usepackage[utf8]{inputenc} 
-\usepackage[english]{babel}
-\usepackage[T1]{fontenc}
-
-\input{colors.tex}
-\input{theme.tex}
-\input{syntaxhighlighting.tex}
-\input{metadata.tex}
-
-\newcommand{\quotes}[1]{''#1''}
+\usepackage{listings}
+\lstdefinestyle{pythonstyle}{
+    language=python,
+    basicstyle=\footnotesize\ttfamily,
+    backgroundcolor=\color{codebackground},
+    commentstyle=\itshape\color{codegray},
+    keywordstyle=\bfseries\color{codeblue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\bfseries\color{codegreen},
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    morekeywords={},
+    otherkeywords={True, False},
+}
+\lstdefinestyle{cstyle}{
+    language=C,
+    basicstyle=\footnotesize\ttfamily,
+    backgroundcolor=\color{codebackground},
+    commentstyle=\itshape\color{codegray},
+    keywordstyle=\bfseries\color{codeblue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\bfseries\color{codegreen},
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    morekeywords={bool},
+    otherkeywords={},
+}
+\lstset{style=cstyle}

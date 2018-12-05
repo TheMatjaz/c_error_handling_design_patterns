@@ -25,15 +25,27 @@
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
 
-\mode<presentation>
+\usepackage{hyperref}
+\hypersetup{
+    unicode=true,
+    pdftoolbar=true,
+    pdfmenubar=true,
+    pdffitwindow=false,
+    pdfstartview={FitH},
+    pdftitle={Error handling design patterns in non-OOP languages},
+    pdfauthor={Matjaž GUŠTIN},
+    pdfsubject={Design Patterns KU assignment},
+    pdfnewwindow=true,
+    colorlinks=true,
+    linkcolor=dark-red,
+    citecolor=green,
+    filecolor=magenta,
+    urlcolor=medium-blue
+}
 
-\usepackage[utf8]{inputenc} 
-\usepackage[english]{babel}
-\usepackage[T1]{fontenc}
+\usepackage[yyyymmdd]{datetime}
+\renewcommand{\dateseparator}{\textendash}
 
-\input{colors.tex}
-\input{theme.tex}
-\input{syntaxhighlighting.tex}
-\input{metadata.tex}
-
-\newcommand{\quotes}[1]{''#1''}
+\title{Error handling design patterns\\in non-OOP languages}
+\subtitle{Namely in ISO C}
+\author{Matjaž GUŠTIN}

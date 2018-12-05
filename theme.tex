@@ -25,15 +25,27 @@
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
 
-\mode<presentation>
+\usepackage{fontspec}
+\setmainfont{Arial}
+\setsansfont{Arial}
+\setmonofont{Menlo}
+% Alternatively, if XeLaTeX or the fonts are not available:
+%\usepackage[scaled=0.9]{helvet}
+%\usepackage{courier}
 
-\usepackage[utf8]{inputenc} 
-\usepackage[english]{babel}
-\usepackage[T1]{fontenc}
+\setbeamertemplate{navigation symbols}{}  % Hide navigation symbols
+\usefonttheme{structurebold}  % Bold titles of each frame
 
-\input{colors.tex}
-\input{theme.tex}
-\input{syntaxhighlighting.tex}
-\input{metadata.tex}
-
-\newcommand{\quotes}[1]{''#1''}
+\AtBeginSection[]{
+    \begin{frame}
+    \vfill
+    \centering
+    \begin{Huge}
+        \bfseries
+        \usebeamercolor[fg]{title}
+        \secname
+        \par%
+    \end{Huge}
+    \vfill
+    \end{frame}
+}
