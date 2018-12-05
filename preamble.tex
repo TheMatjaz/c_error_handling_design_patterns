@@ -31,14 +31,26 @@
 \usepackage[english]{babel}
 \usepackage[T1]{fontenc}
 
-\usepackage[yyyymmdd]{datetime}
-\renewcommand{\dateseparator}{--}
+\usepackage{fontspec}
+\setmainfont{Arial}
+\setsansfont{Arial}
+\setmonofont{Menlo}
+% Alternatively, if XeLaTeX or the fonts are not available:
+%\usepackage[scaled=0.9]{helvet}
+%\usepackage{courier}
 
-\usepackage{xcolor} 
+
+\setbeamertemplate{navigation symbols}{}  % Hide navigation symbols
+\usefonttheme{structurebold}  % Bold titles of each frame
+
+\usepackage[yyyymmdd]{datetime}
+\renewcommand{\dateseparator}{\textendash}
+
+\usepackage{xcolor}
 \definecolor{codegreen}{RGB}{0, 70, 0}
 \definecolor{codegray}{RGB}{90, 90, 90}
 \definecolor{codepurple}{RGB}{100, 0, 120}
-\definecolor{codeblue}{RGB}{100, 0, 200}
+\definecolor{codeblue}{RGB}{0, 0, 90}
 \definecolor{codebackground}{RGB}{250, 250, 250}
 \definecolor{dark-red}{rgb}{0.7,0,0}
 \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
@@ -61,33 +73,53 @@
     filecolor=magenta,
     urlcolor=medium-blue
 }
- 
+
 \usepackage{listings}
-\lstdefinestyle{cstyle}{
-    basicstyle=\ttfamily,
-    backgroundcolor=\color{codebackground},   
-    commentstyle=\color{codegray},
-    keywordstyle=\bf\color{blue},
+\lstdefinestyle{pythonstyle}{
+    language=python,
+    basicstyle=\footnotesize\ttfamily,
+    backgroundcolor=\color{codebackground},
+    commentstyle=\itshape\color{codegray},
+    keywordstyle=\bfseries\color{codeblue},
     numberstyle=\tiny\color{codegray},
-    stringstyle=\bf\color{codegreen},
-    basicstyle=\footnotesize,
-    breakatwhitespace=false,         
-    breaklines=true,                 
-    captionpos=b,                    
-    keepspaces=true,                 
-    numbers=left,                    
-    numbersep=5pt,                  
-    showspaces=false,                
+    stringstyle=\bfseries\color{codegreen},
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
     showstringspaces=false,
-    showtabs=false,                  
-    tabsize=4
+    showtabs=false,
+    tabsize=4,
+    morekeywords={},
+    otherkeywords={True, False},
+}
+\lstdefinestyle{cstyle}{
+    language=C,
+    basicstyle=\footnotesize\ttfamily,
+    backgroundcolor=\color{codebackground},
+    commentstyle=\itshape\color{codegray},
+    keywordstyle=\bfseries\color{codeblue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\bfseries\color{codegreen},
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    morekeywords={bool},
+    otherkeywords={},
 }
 \lstset{style=cstyle}
 
-\newcommand{\quotes}[1]{``#1''}
-
-\setbeamertemplate{navigation symbols}{}  % Hide navigation symbols
-\setbeamercovered{invisible}
+\newcommand{\quotes}[1]{''#1''}
 
 \AtBeginSection[]{
   \begin{frame}
