@@ -25,29 +25,174 @@
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
 
-\documentclass[aspectratio=169,14pt]{beamer}
+\documentclass[aspectratio=169,12pt]{beamer}
 \input{preamble.tex}
 \begin{document}
 
 \begin{frame}
     \titlepage
+    
+    \begin{center}
+        \begin{footnotesize}
+        These slides are licensed under a \href{https://creativecommons.org/licenses/by/4.0/}{Creative~Commons~Attribution~4.0~International~License~(CC~BY~4.0)}.
+        \end{footnotesize}
+    \end{center}
 \end{frame}
 
-\begin{frame}[fragile]{Snippet}
-\begin{lstlisting}[language=C,style=cstyle]
-int main(void)
-{
-    puts("Hello world!");
-    // A comment
-    /* Another comment */
-    for (char i = 0; ; i++)
-    {
-        do { puts(); } while(1);
-    }
-    return 0;
-}
+
+\begin{frame}{Overview}
+    \begin{enumerate}
+        \item A brief recap over Exceptions
+        \item Return codes
+        \item Other types of error indicators
+    \end{enumerate}
+    
+    \begin{block}{Note}
+    It will be very code-based and development-focused
+    \end{block}
+\end{frame}
+
+
+\section{A brief recap over Exceptions}
+
+\begin{frame}{Exceptions}
+    In OOP languages we commonly have the \textbf{Exception} classes used to handle:
+    \begin{itemize}
+        \item unexpected values or states
+        \item special cases
+        \item non-nominal situations
+        \item ... basically something that cannot be handled the normal way
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Control flow break}
+    When one Exception object is raised/thrown
+    \begin{itemize}
+        \item it breaks the normal execution flow
+        \item makes the current function return early
+        \item repeats the same on every function in the stack towards the \texttt{main()}
+        \item stops when caught with a \texttt{try-catch} block
+        \item or makes the program terminate abruplty if nothing catches it
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Advantages of exceptions}
+    \begin{itemize}
+        \item The biggest advantage of exceptions is the break of the control flow
+        \item It allows separation of the nominal behaviour and the error handling behaviour
+        \item It's nicer to read
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{From \textit{Clean Code} by Robert C. Martin}
+    \begin{itemize}
+        \item \textit{\quotes{Returning error codes from command functions is a subtle violation of command query separation.}}
+        \item \textbf{Command query separation}: \textit{\quotes{functions should either do something or answer something, but not both. Either your function should change the state of an object [command], or it should return some information about that object [query]. Doing both often leads to confusion.}}
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]{}
+\begin{lstlisting}[style=pythonstyle]
+def update_software():
+    completed = False
+    while not completed:
+        try:
+            update = download_latest_software_update()
+            update.check_integrity()
+            update.install()
+            completed = True
+        except ConnectionError:
+            log.error("Retrying download later.")
+            time.sleep(3600)
+        except IntegrityError:
+            log.error("Downloaded file corrupted.")
+        except InstallationError:
+            log.error("No admin rights.")
+            print("Please run the program with sudo.")
+            completed = True
+        finally:
+            update.erase_temp_files()
 \end{lstlisting}
 \end{frame}
 
+
+\begin{frame}{But...}
+    \begin{itemize}
+        \item Many programming languages were created before OOP was even a thing
+        \item Examples: Fortran, C, Cobol, Pascal or the more modern Rust
+        \item Other patterns were found at the time and are still in use today
+        \item The main difference is: \textbf{the control flow is not broken!} Manual handling is required.
+        \item \textit{\quotes{If a tree falls in a forest and no one is around to hear it, does it make a sound?}}
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Overview of the patterns}
+    \begin{enumerate}
+        \item Return codes
+            \begin{enumerate}
+                \item Boolean codes
+                \item Error codes
+                \item Status codes
+                \item As output argument
+            \end{enumerate}
+        \item Return indicator of work done
+        \item Return impossible value
+        \item NULL pointers
+        \item Floating point values
+        \item \texttt{<errno.h>} and global error codes
+        \item \texttt{<jmp.h>}
+        \item SQL and NULL
+    \end{enumerate}
+\end{frame}
+
+
+\section{Return codes}
+
+\begin{frame}[fragile]{Boolean return code}
+\begin{lstlisting}[style=cstyle]
+#include <stdbool.h>
+
+bool receive_message(message_t* message);
+
+// Alternate version without booleans
+int receive_message(message_t* message);
+\end{lstlisting}
+
+    \begin{description}
+        \item[\texttt{true}] (or non-0) on success
+        \item[\texttt{false}] (or 0) on failure
+    \end{description}
+    
+    \begin{block}{The issue}
+        Why did it fail? Can we retry or not? Can we tune the receving settings based on the error?
+    \end{block}
+\end{frame}
+
+
+\section{Other error signaling systems}
+
+\section{Conclusion}
+
+\begin{frame}{Sources}
+    \begin{itemize}
+        \item \url{https://en.wikipedia.org/wiki/Exception_handling}
+        \item Robert C. Martin, \textit{Clean Code: A Handbook of Agile Software Craftsmanship}, ISBN-10: 9780132350884 
+    \end{itemize}
+    
+    \begin{footnotesize}
+        \begin{center}
+            These slides are licensed under a \href{https://creativecommons.org/licenses/by/4.0/}{Creative~Commons~Attribution~4.0~International~License~(CC~BY~4.0)}
+            
+            and the source code is available at
+            
+            \url{https://github.com/TheMatjaz/c_error_handling_design_patterns}
+        \end{center}    
+    \end{footnotesize}
+\end{frame}
 
 \end{document}
