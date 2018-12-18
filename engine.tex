@@ -1,4 +1,3 @@
-% Copyright (c) 2018 Matjaž Guštin <dev@matjaz.it>
 % All rights reserved.
 % 
 % Redistribution and use in source and binary forms, with or without
@@ -25,11 +24,15 @@
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
 
-\mode<presentation>
-
-\input{engine.tex}
-\input{colors.tex}
-\input{theme.tex}
-\input{syntaxhighlighting.tex}
-\input{metadata.tex}
-\input{customcommands.tex}
+\usepackage{ifxetex}
+\ifxetex
+    \usepackage{polyglossia}
+    \setdefaultlanguage{english}
+    \usepackage{fontspec}
+    \usepackage{graphicx} 
+\else
+    \usepackage[english]{babel}
+    \usepackage[T1]{fontenc}
+    \usepackage[utf8]{inputenc}
+    \usepackage[pdftex]{graphicx} 
+\fi
