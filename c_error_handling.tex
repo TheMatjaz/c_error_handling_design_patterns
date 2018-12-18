@@ -373,6 +373,92 @@ After fopen fails: No such file or directory
 
 \section{Other error signaling systems}
 
+
+\section{A note on the code style}
+
+\begin{frame}[fragile]{Stopping the execution flow with error codes}
+\begin{lstlisting}[style=cstyle]
+rx_code_t receive_message(message_t* message) {
+    receiver_config_t config;  rx_code_t error_code;
+    
+    error_code = load_receiver_config_from_storage(&config);
+    if (error_code) { return error_code; }  // Always use brackets
+    error_code = receiver_enable_peripheral();
+    if (error_code) { return error_code; }
+    error_code = receiver_configure(&config);
+    if (error_code) { return error_code; }
+    error_code = receiver_receive(message);
+    return error_code;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{With \texttt{while(0)}}
+\begin{lstlisting}[style=cstyle]
+rx_code_t receive_message(message_t* message) {
+    receiver_config_t config;  rx_code_t error_code;
+    
+    do {
+        error_code = load_receiver_config_from_storage(&config);
+        if (error_code) { break; }
+        error_code = receiver_enable_peripheral();
+        if (error_code) { break; }
+        error_code = receiver_configure(&config);
+        if (error_code) { break; }
+        error_code = receiver_receive(message);
+    } while (0);
+    return error_code;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Loops inside \texttt{while(0)}}
+\begin{lstlisting}[style=cstyle]
+rx_code_t receive_message(message_t* message) {
+    receiver_config_t config;  rx_code_t error_code;
+    
+    do {
+        error_code = load_receiver_config_from_storage(&config);
+        if (error_code) { break; }
+        for (int i = 0; i < 10; i++) {
+            // Activate 10 peripherals
+            error_code = receiver_enable_peripheral(i);
+            if (error_code) { break; }
+            // The break exits the for loop, not the while(0)
+        }
+        error_code = receiver_configure(&config);
+        if (error_code) { break; }
+        error_code = receiver_receive(message);
+    } while (0);
+    return error_code;
+}
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]{With \texttt{goto}}
+\begin{lstlisting}[style=cstyle]
+rx_code_t receive_message(message_t* message) {
+    receiver_config_t config;  rx_code_t error_code;
+    
+    error_code = load_receiver_config_from_storage(&config);
+    if (error_code) { goto terminate; }
+    for (int i = 0; i < 10; i++) {
+        // Activate 10 peripherals
+        error_code = receiver_enable_peripheral(i);
+        if (error_code) { goto terminate; }
+    }
+    error_code = receiver_configure(&config);
+    if (error_code) { goto terminate; }
+    error_code = receiver_receive(message);
+    
+    terminate: {
+        return error_code;
+    }
+}
+\end{lstlisting}
+\end{frame}
+
 \section{Conclusion}
 
 \begin{frame}{Sources}
