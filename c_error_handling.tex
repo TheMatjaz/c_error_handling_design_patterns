@@ -543,10 +543,10 @@ A standard, glorified global error code.
 #include <string.h>  // To convert `errno` to a human-readable string with strerror()
 
 int main() {
-    printf("At startup = %s\n", strerror(errno));
-    FILE* file = fopen("NON_existing_file.txt", "r");
+    printf("At startup: value=%d, string=%s\n", errno, strerror(errno));
+    FILE *file = fopen("NON_existing_file.txt", "r");
     if (file == NULL) {
-        printf("After fopen fails = %s\n", strerror(errno));
+        printf("After fopen fails: value=%d, string=%s\n", errno, strerror(errno));
     } else {
         fclose(file);
     }
@@ -636,7 +636,58 @@ The IEEE encoding of the real numbers has embedded handling of special cases.
 
 
 
-\section{Other error signaling systems}
+\section{\texttt{longjmp.h}}
+\begin{frame}{Setting and restoring a state}
+LOREM IPSUM
+\end{frame}
+
+\begin{frame}[fragile]{}
+\begin{lstlisting}[style=cstyle]
+#include <stdio.h>
+#include <setjmp.h>
+
+static jmp_buf state;
+
+typedef enum {
+    OK = 0,
+    NEGATIVE_VALUE = 1,
+    TOO_BIG_VALUE = 2,
+} error_code_t;
+
+int twice4(int value) {
+    if (value < 0) {
+        printf("(!) Negative value: %d\n", value);
+        longjmp(state, NEGATIVE_VALUE); // Restore state, set code
+    } else if (value > 100) {
+        printf("(!) Too big value: %d\n", value);
+        longjmp(state, TOO_BIG_VALUE);  // Restore state, set code
+    } else { return 2 * value; }
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{}
+\begin{lstlisting}[style=cstyle]
+int twice3(int value) { return twice4(value); }
+int twice2(int value) { return twice3(value); }
+int twice(int value)  { return twice2(value); }
+
+int main() {
+    // Initially saves state and sets error_code to 0.
+    // Jumped to using longjmp(state, new_value),
+    // setting error_code to new_value.
+    int error_code = setjmp(state);
+    if (error_code == OK) {
+        int input = -10;  // -10 or 1000 jumps to else branch
+        int result = twice(input);
+        printf("Twice of %d is %d\n", input, result);
+    } else {
+        printf("Error code %d\n", error_code);
+    }
+    return 0;
+}
+\end{lstlisting}
+\end{frame}
 
 \section{Conclusion}
 
