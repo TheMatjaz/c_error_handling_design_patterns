@@ -40,17 +40,24 @@
 \end{frame}
 
 
+
 \begin{frame}{Overview}
 \begin{enumerate}
     \item A brief recap over Exceptions
     \item Return codes
-    \item Other types of error indicators
+    \item Using the return value's domain
+    \item Embedded error indicator in value
+    \item \texttt{<errno.h>}
+    \item \texttt{<longjmp.h>}
 \end{enumerate}
 
 \begin{block}{Note}
 It will be very code-based and development-focused
 \end{block}
 \end{frame}
+
+
+
 
 
 \section{A brief recap over Exceptions}
@@ -66,6 +73,7 @@ In OOP languages we commonly have the \textbf{Exception} classes used to handle:
 \end{frame}
 
 
+
 \begin{frame}{Control flow break}
 When one Exception object is raised/thrown
 \begin{itemize}
@@ -78,6 +86,7 @@ When one Exception object is raised/thrown
 \end{frame}
 
 
+
 \begin{frame}{Advantages of exceptions}
 \begin{itemize}
     \item The biggest advantage of exceptions is the break of the control flow
@@ -87,12 +96,14 @@ When one Exception object is raised/thrown
 \end{frame}
 
 
+
 \begin{frame}{From \textit{Clean Code} by Robert C. Martin}
 \begin{itemize}
     \item \textit{\quotes{Returning error codes from command functions is a subtle violation of command query separation.}}
     \item \textbf{Command query separation}: \textit{\quotes{functions should either do something or answer something, but not both. Either your function should change the state of an object [command], or it should return some information about that object [query]. Doing both often leads to confusion.}}
 \end{itemize}
 \end{frame}
+
 
 
 \begin{frame}[fragile]{}
@@ -120,6 +131,7 @@ def update_software():
 \end{frame}
 
 
+
 \begin{frame}{But...}
 \begin{itemize}
     \item Many programming languages were created before OOP was even a thing
@@ -130,6 +142,8 @@ def update_software():
 \end{itemize}
 \end{frame}
 
+
+
 \begin{frame}{Problem and forces}
 \begin{itemize}
     \item Need a way to indicate to the function caller that something could not be done and why.
@@ -138,15 +152,20 @@ def update_software():
 \end{itemize}
 \end{frame}
 
+
+
 \begin{frame}{Overview of the patterns}
 \begin{enumerate}
     \item Return codes
-    \item Using the values' domain
-    \item \texttt{<errno.h>} and global error codes
-    \item \texttt{<jmp.h>}
-    \item SQL and NULL
+    \item Using the return value's domain
+    \item Embedded error indicator in value
+    \item \texttt{<errno.h>}
+    \item \texttt{<longjmp.h>}
 \end{enumerate}
 \end{frame}
+
+
+
 
 
 \section{Return codes}
@@ -163,6 +182,8 @@ def update_software():
     \end{enumerate}
 \end{itemize}
 \end{frame}
+
+
 
 \begin{frame}[fragile]{Boolean return code}
 \begin{lstlisting}[style=cstyle]
@@ -181,6 +202,7 @@ int receive_message(message_t* message);
 \end{frame}
 
 
+
 \begin{frame}[fragile]{Boolean return code: consequences}
 \begin{itemize}
     \item Why did it fail?
@@ -189,6 +211,7 @@ int receive_message(message_t* message);
     \item Confusing: does \texttt{false} indicate \quotes{no error} or \quotes{no success}?
 \end{itemize}
 \end{frame}
+
 
 
 \begin{frame}[fragile]{Boolean return code: usage examples}
@@ -208,6 +231,7 @@ while (!receive_message(&rx_message)) {
 
 Hard to remember if the negation is needed or not.
 \end{frame}
+
 
 
 \begin{frame}[fragile]{Error code}
@@ -230,6 +254,7 @@ rx_code_t receive_message(message_t* message);
 \end{frame}
 
 
+
 \begin{frame}[fragile]{Error code: consequences}
 \begin{itemize}
     \item Cleaner setup
@@ -239,6 +264,7 @@ rx_code_t receive_message(message_t* message);
     \item \textbf{Arguably the most common pattern!}
 \end{itemize}
 \end{frame}
+
 
 
 \begin{frame}[fragile]{Usage examples: error code}
@@ -261,6 +287,8 @@ if ((rx_code = receive_message(&rx_message)) != RX_OK) {
 }
 \end{lstlisting}
 \end{frame}
+
+
 
 \begin{frame}[fragile]{}
 \begin{lstlisting}[style=cstyle,basicstyle=\scriptsize\ttfamily]
@@ -290,6 +318,8 @@ do {
 \end{lstlisting}
 \end{frame}
 
+
+
 \begin{frame}{Usage examples: process exit status}
 \begin{itemize}
     \item Also known as \textit{exit code} or \textit{error level}.
@@ -299,6 +329,7 @@ do {
     \item In C it's the \texttt{int} value returned by the \texttt{main} function. Alternatively the \texttt{exit()} function can be used to terminate the program at any point with the specified exit code to be returned.
 \end{itemize}
 \end{frame}
+
 
 
 \begin{frame}[fragile]{Status code}
@@ -318,6 +349,7 @@ status_code_t process_message(message_t* message);
 \end{frame}
 
 
+
 \begin{frame}[fragile]{Status code: consequences}
 \begin{itemize}
     \item Multiple ways to complete a task (Strategy) and we known which one was chosen
@@ -326,6 +358,7 @@ status_code_t process_message(message_t* message);
     \item Ofter macros are used to group \quotes{OK}-states, which results in a regular error code
 \end{itemize}
 \end{frame}
+
 
 
 \begin{frame}[fragile]{Cleaner setup}
@@ -348,6 +381,7 @@ error_code_t process_message(message_t* message,
 \end{frame}
 
 
+
 \begin{frame}[fragile]{Cleaner setup: consequences}
 \begin{itemize}
     \item Now we need to handle two values instead of one
@@ -357,7 +391,8 @@ error_code_t process_message(message_t* message,
 \end{frame}
 
 
-\begin{frame}[fragile]{Nested return codes problem}
+
+\begin{frame}[fragile]{Nested return codes }
 \begin{lstlisting}[style=cstyle]
 rx_code_t receive_message(message_t* message) {
     rx_code_t reception_error = RX_OK;
@@ -372,6 +407,8 @@ rx_code_t receive_message(message_t* message) {
 \end{lstlisting}
 \end{frame}
 
+
+
 \begin{frame}{Nested return codes problem (cont.)}
 \begin{itemize}
     \item Returning the inner error code \texttt{encoding\_error} breaks abstraction layers
@@ -381,6 +418,9 @@ rx_code_t receive_message(message_t* message) {
     \item Combining the error code into a concatenated integer leads to confusion
 \end{itemize}
 \end{frame}
+
+
+
 
 
 \section{A note on the code style}
@@ -402,6 +442,8 @@ rx_code_t receive_message(message_t* message) {
 \end{lstlisting}
 \end{frame}
 
+
+
 \begin{frame}[fragile]{With \texttt{while(0)}}
 \begin{lstlisting}[style=cstyle]
 rx_code_t receive_message(message_t* message) {
@@ -420,6 +462,8 @@ rx_code_t receive_message(message_t* message) {
 }
 \end{lstlisting}
 \end{frame}
+
+
 
 \begin{frame}[fragile]{Loops inside \texttt{while(0)}}
 \begin{lstlisting}[style=cstyle]
@@ -445,6 +489,7 @@ rx_code_t receive_message(message_t* message) {
 \end{frame}
 
 
+
 \begin{frame}[fragile]{With \texttt{goto}}
 \begin{lstlisting}[style=cstyle]
 rx_code_t receive_message(message_t* message) {
@@ -468,6 +513,8 @@ rx_code_t receive_message(message_t* message) {
 \end{lstlisting}
 \end{frame}
 
+
+
 \begin{frame}{My personal rules for \texttt{goto}}
 \begin{enumerate}
     \item Avoid it, if you can.
@@ -480,13 +527,12 @@ rx_code_t receive_message(message_t* message) {
 \end{enumerate}
 \end{frame}
 
-\begin{frame}{The biggest problem with return codes}
-\begin{center}
-Nobody forces the programmer to check them, as opposed to exceptions that break the flow.
-\end{center}
-\end{frame}
 
-\section{Using the return value domain}
+
+
+
+\section{Using the return value's domain}
+
 \begin{frame}[fragile]{Return values outside the domain}
 
 \begin{itemize}
@@ -505,6 +551,7 @@ Returns the number of characters written: 0 or more. \textbf{Negative on failure
 \end{frame}
 
 
+
 \begin{frame}[fragile]{Return values inside the domain}
 Also known as \textit{semipredicate problem}: how do I distinguish between a valid output and an error indicator?
 
@@ -516,6 +563,8 @@ long int strtol (const char* str, char** endptr, int base);
 
 Returns the converted integer. If no valid conversion could be performed, returns 0.
 \end{frame}
+
+
 
 \begin{frame}[fragile]{Return values inside the domain (cont.)}
 What happens if the input string contains a zero digit?
@@ -532,28 +581,7 @@ But: \texttt{strtol()} sets second parameter \texttt{endptr} to first char after
 \end{frame}
 
 
-\section{\texttt{errno.h}}
 
-\begin{frame}[fragile]{errno.h}
-A standard, glorified global error code.
-
-\begin{lstlisting}[style=cstyle]
-#include <stdio.h>
-#include <errno.h>   // To access the integer `errno`
-#include <string.h>  // To convert `errno` to a human-readable string with strerror()
-
-int main() {
-    printf("At startup: value=%d, string=%s\n",
-           errno, strerror(errno));
-    FILE *file = fopen("NON_existing_file.txt", "r");
-    if (file == NULL) {
-        printf("After fopen fails: value=%d, string=%s\n",
-               errno, strerror(errno));
-    } else { fclose(file); }
-    return 0;
-}
-\end{lstlisting}
-\end{frame}
 
 
 \section{Embedded error indicator in value}
@@ -580,6 +608,25 @@ int main() {
 \end{lstlisting}
 \end{frame}
 
+
+
+\begin{frame}{SQL}
+ISO SQL (structured query language) used to interrogate RDBMS:
+\begin{itemize}
+    \item every value can also be \texttt{NULL} (in functions)
+    \item functions often return either the value or \texttt{NULL} in case of error
+    \item the three-valued logic makes \texttt{NULL} behave similar as the "undefined" value. Examples:
+    \begin{itemize}
+        \item \texttt{NULL AND  TRUE → NULL}
+        \item \texttt{NULL AND FALSE → FALSE}
+        \item \texttt{NULL AND  NULL → NULL}
+        \item \texttt{NULL  OR  NULL → NULL}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
 \begin{frame}{IEEE 754 floating-point values}
 
 The IEEE encoding of the real numbers has embedded handling of special cases.
@@ -604,6 +651,8 @@ The IEEE encoding of the real numbers has embedded handling of special cases.
 \end{itemize}
 \end{frame}
 
+
+
 \begin{frame}{IEEE 754 floating-point values (cont.)}
 \begin{itemize}
     \item \texttt{NaN} (Not a Number)
@@ -626,10 +675,41 @@ The IEEE encoding of the real numbers has embedded handling of special cases.
 
 
 
+
+
+\section{\texttt{errno.h}}
+
+\begin{frame}[fragile]{errno.h}
+A standard, glorified global error code.
+
+\begin{lstlisting}[style=cstyle]
+#include <stdio.h>
+#include <errno.h>   // To access the integer `errno`
+#include <string.h>  // To convert `errno` to a human-readable string with strerror()
+
+int main() {
+    printf("At startup: value=%d, string=%s\n",
+    errno, strerror(errno));
+    FILE *file = fopen("NON_existing_file.txt", "r");
+    if (file == NULL) {
+        printf("After fopen fails: value=%d, string=%s\n",
+        errno, strerror(errno));
+    } else { fclose(file); }
+    return 0;
+}
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
 \section{\texttt{longjmp.h}}
 \begin{frame}{Setting and restoring a state}
 LOREM IPSUM
 \end{frame}
+
+
 
 \begin{frame}[fragile]{}
 \begin{lstlisting}[style=cstyle]
@@ -656,6 +736,8 @@ int twice4(int value) {
 \end{lstlisting}
 \end{frame}
 
+
+
 \begin{frame}[fragile]{}
 \begin{lstlisting}[style=cstyle]
 int twice3(int value) { return twice4(value); }
@@ -680,26 +762,13 @@ int main() {
 \end{frame}
 
 
-\section{Briefly on different languages}
-\begin{frame}{SQL}
-ISO SQL (structured query language) used to interrogate RDBMS:
-\begin{itemize}
-    \item every value can also be \texttt{NULL} (in functions)
-    \item functions often return either the value or \texttt{NULL} in case of error
-    \item the three-valued logic makes \texttt{NULL} behave similar as the "undefined" value. Examples:
-        \begin{itemize}
-            \item \texttt{NULL AND  TRUE → NULL}
-            \item \texttt{NULL AND FALSE → FALSE}
-            \item \texttt{NULL AND  NULL → NULL}
-            \item \texttt{NULL  OR  NULL → NULL}
-        \end{itemize}
-\end{itemize}
-\end{frame}
+
 
 
 \section{Conclusion}
 
 \begin{frame}{Sources}
+\begin{small}
     \begin{itemize}
         \item \url{https://en.wikipedia.org/wiki/Exception_handling}
         \item \url{https://en.wikipedia.org/wiki/Exit_status}
@@ -707,16 +776,17 @@ ISO SQL (structured query language) used to interrogate RDBMS:
         \item \url{https://en.wikipedia.org/wiki/Floating-point_arithmetic\#Special_values}
         \item Robert C. Martin, \textit{Clean Code: A Handbook of Agile Software Craftsmanship}, ISBN-10: 9780132350884 
     \end{itemize}
+\end{small}
     
-    \begin{footnotesize}
-        \begin{center}
-            These slides are licensed under a \href{https://creativecommons.org/licenses/by/4.0/}{Creative~Commons~Attribution~4.0~International~License~(CC~BY~4.0)}
-            
-            and the source code is available at
-            
-            \url{https://github.com/TheMatjaz/c_error_handling_design_patterns}
-        \end{center}    
-    \end{footnotesize}
+\begin{footnotesize}
+    \begin{center}
+        These slides are licensed under a \href{https://creativecommons.org/licenses/by/4.0/}{Creative~Commons~Attribution~4.0~International~License~(CC~BY~4.0)}
+        
+        and the source code is available at
+        
+        \url{https://github.com/TheMatjaz/c_error_handling_design_patterns}
+    \end{center}    
+\end{footnotesize}
 \end{frame}
 
 \end{document}
