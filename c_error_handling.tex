@@ -141,11 +141,7 @@ def update_software():
 \begin{frame}{Overview of the patterns}
 \begin{enumerate}
     \item Return codes
-    \item Return indicator of work done
-    \item Return impossible value
-    \item Output function parameters
-    \item NULL pointers
-    \item Floating point values
+    \item Using the values' domain
     \item \texttt{<errno.h>} and global error codes
     \item \texttt{<jmp.h>}
     \item SQL and NULL
@@ -480,8 +476,7 @@ rx_code_t receive_message(message_t* message) {
             \item Good: \texttt{goto termination}, \texttt{goto error\_handling}
             \item Bad: \texttt{goto failure}  (Does it jump to a failing point or handles a failure?)
         \end{itemize}
-    \item Only jump \textbf{downwards in the code} (i.e. skip some instruction, don’t cycle them).
-    \item Only jump \textbf{within the same function}, better if only to the function end (\texttt{return} call).
+    \item Only jump \textbf{downwards in the code} (i.e. skip some instruction, don’t cycle them). Better if only to the function's end (to the \texttt{return} call).
 \end{enumerate}
 \end{frame}
 
