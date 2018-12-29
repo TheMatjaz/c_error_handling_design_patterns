@@ -543,25 +543,15 @@ A standard, glorified global error code.
 #include <string.h>  // To convert `errno` to a human-readable string with strerror()
 
 int main() {
-    printf("At startup: value=%d, string=%s\n", errno, strerror(errno));
+    printf("At startup: value=%d, string=%s\n",
+           errno, strerror(errno));
     FILE *file = fopen("NON_existing_file.txt", "r");
     if (file == NULL) {
-        printf("After fopen fails: value=%d, string=%s\n", errno, strerror(errno));
-    } else {
-        fclose(file);
-    }
+        printf("After fopen fails: value=%d, string=%s\n",
+               errno, strerror(errno));
+    } else { fclose(file); }
     return 0;
 }
-\end{lstlisting}
-\end{frame}
-
-\begin{frame}[fragile]{errno.h (cont.)}
-Output on execution:
-
-\begin{lstlisting}[style=nostyle]
-$ gcc errno_example.c -o errno_example && ./errno_example
-At startup = Undefined error: 0
-After fopen fails = No such file or directory
 \end{lstlisting}
 \end{frame}
 
@@ -688,6 +678,24 @@ int main() {
 }
 \end{lstlisting}
 \end{frame}
+
+
+\section{Briefly on different languages}
+\begin{frame}{SQL}
+ISO SQL (structured query language) used to interrogate RDBMS:
+\begin{itemize}
+    \item every value can also be \texttt{NULL} (in functions)
+    \item functions often return either the value or \texttt{NULL} in case of error
+    \item the three-valued logic makes \texttt{NULL} behave similar as the "undefined" value. Examples:
+        \begin{itemize}
+            \item \texttt{NULL AND  TRUE → NULL}
+            \item \texttt{NULL AND FALSE → FALSE}
+            \item \texttt{NULL AND  NULL → NULL}
+            \item \texttt{NULL  OR  NULL → NULL}
+        \end{itemize}
+\end{itemize}
+\end{frame}
+
 
 \section{Conclusion}
 
