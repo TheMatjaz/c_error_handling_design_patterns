@@ -485,6 +485,11 @@ rx_code_t receive_message(message_t* message) {
 \end{enumerate}
 \end{frame}
 
+\begin{frame}{The biggest problem with return codes}
+\begin{center}
+Nobody forces the programmer to check them, as opposed to exceptions that break the flow.
+\end{center}
+\end{frame}
 
 \section{Using the return value domain}
 \begin{frame}[fragile]{Return values outside the domain}
@@ -567,6 +572,29 @@ After fopen fails = No such file or directory
 
 
 \section{Embedded error indicator in value}
+
+\begin{frame}[fragile]{A simple pointer}
+A pointer to something may be NULL (have the value 0) to indicate the broken link.
+Otherwise it can be dereferenced.
+
+\textit{*cough* segmentation faults *cough*}
+
+\begin{lstlisting}[style=cstyle]
+#include <stdio.h>
+#include <stdint.h>
+
+int main() {
+    uint8_t* buffer = malloc(50);
+    if (buffer != NULL) {
+        puts("Malloc succeeded and I have a buffer");
+    } else {
+        puts("Malloc failed");
+    }
+    return 0;
+}
+\end{lstlisting}
+\end{frame}
+
 \begin{frame}{IEEE 754 floating-point values}
 
 The IEEE encoding of the real numbers has embedded handling of special cases.
@@ -605,8 +633,9 @@ The IEEE encoding of the real numbers has embedded handling of special cases.
         \item comparing with a \texttt{NaN} always returns \texttt{false}
         \item has a quiet (just returning) and signaling variant (FPU/floatlib indicates error to the system)
         \item it even has free bits to encode type of error (rare)
-        \item \texttt{isnan(value)} to check
+        \item to check: \texttt{isnan(value)}
     \end{itemize}
+    \item combined check: \texttt{isfinite(value)} returns \texttt{true} when the value is not \texttt{NaN} or \( \pm \infty \)
 \end{itemize}
 \end{frame}
 
