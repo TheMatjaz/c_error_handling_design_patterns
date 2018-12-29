@@ -30,68 +30,68 @@
 \begin{document}
 
 \begin{frame}
-    \titlepage
-    
-    \begin{center}
-        \begin{footnotesize}
-        These slides are licensed under a \href{https://creativecommons.org/licenses/by/4.0/}{Creative~Commons~Attribution~4.0~International~License~(CC~BY~4.0)}.
-        \end{footnotesize}
-    \end{center}
+\titlepage
+
+\begin{center}
+    \begin{footnotesize}
+    These slides are licensed under a \href{https://creativecommons.org/licenses/by/4.0/}{Creative~Commons~Attribution~4.0~International~License~(CC~BY~4.0)}.
+    \end{footnotesize}
+\end{center}
 \end{frame}
 
 
 \begin{frame}{Overview}
-    \begin{enumerate}
-        \item A brief recap over Exceptions
-        \item Return codes
-        \item Other types of error indicators
-    \end{enumerate}
-    
-    \begin{block}{Note}
-    It will be very code-based and development-focused
-    \end{block}
+\begin{enumerate}
+    \item A brief recap over Exceptions
+    \item Return codes
+    \item Other types of error indicators
+\end{enumerate}
+
+\begin{block}{Note}
+It will be very code-based and development-focused
+\end{block}
 \end{frame}
 
 
 \section{A brief recap over Exceptions}
 
 \begin{frame}{Exceptions}
-    In OOP languages we commonly have the \textbf{Exception} classes used to handle:
-    \begin{itemize}
-        \item unexpected values or states
-        \item special cases
-        \item non-nominal situations
-        \item ... basically something that cannot be handled the normal way
-    \end{itemize}
+In OOP languages we commonly have the \textbf{Exception} classes used to handle:
+\begin{itemize}
+    \item unexpected values or states
+    \item special cases
+    \item non-nominal situations
+    \item ... basically something that cannot be handled the normal way
+\end{itemize}
 \end{frame}
 
 
 \begin{frame}{Control flow break}
-    When one Exception object is raised/thrown
-    \begin{itemize}
-        \item it breaks the normal execution flow
-        \item makes the current function return early
-        \item repeats the same on every function in the stack towards the \texttt{main()}
-        \item stops when caught with a \texttt{try-catch} block
-        \item or makes the program terminate abruplty if nothing catches it
-    \end{itemize}
+When one Exception object is raised/thrown
+\begin{itemize}
+    \item it breaks the normal execution flow
+    \item makes the current function return early
+    \item repeats the same on every function in the stack towards the \texttt{main()}
+    \item stops when caught with a \texttt{try-catch} block
+    \item or makes the program terminate abruplty if nothing catches it
+\end{itemize}
 \end{frame}
 
 
 \begin{frame}{Advantages of exceptions}
-    \begin{itemize}
-        \item The biggest advantage of exceptions is the break of the control flow
-        \item It allows separation of the nominal behaviour and the error handling behaviour
-        \item It's nicer to read
-    \end{itemize}
+\begin{itemize}
+    \item The biggest advantage of exceptions is the break of the control flow
+    \item It allows separation of the nominal behaviour and the error handling behaviour
+    \item It's nicer to read
+\end{itemize}
 \end{frame}
 
 
 \begin{frame}{From \textit{Clean Code} by Robert C. Martin}
-    \begin{itemize}
-        \item \textit{\quotes{Returning error codes from command functions is a subtle violation of command query separation.}}
-        \item \textbf{Command query separation}: \textit{\quotes{functions should either do something or answer something, but not both. Either your function should change the state of an object [command], or it should return some information about that object [query]. Doing both often leads to confusion.}}
-    \end{itemize}
+\begin{itemize}
+    \item \textit{\quotes{Returning error codes from command functions is a subtle violation of command query separation.}}
+    \item \textbf{Command query separation}: \textit{\quotes{functions should either do something or answer something, but not both. Either your function should change the state of an object [command], or it should return some information about that object [query]. Doing both often leads to confusion.}}
+\end{itemize}
 \end{frame}
 
 
@@ -121,28 +121,28 @@ def update_software():
 
 
 \begin{frame}{But...}
-    \begin{itemize}
-        \item Many programming languages were created before OOP was even a thing
-        \item Examples: Fortran, C, Cobol, Pascal or the more modern Rust
-        \item Other patterns were found at the time and are still in use today
-        \item The main difference is: \textbf{the control flow is not broken!} Manual handling is required.
-        \item \textit{\quotes{If a tree falls in a forest and no one is around to hear it, does it make a sound?}}
-    \end{itemize}
+\begin{itemize}
+    \item Many programming languages were created before OOP was even a thing
+    \item Examples: Fortran, C, Cobol, Pascal or the more modern Rust
+    \item Other patterns were found at the time and are still in use today
+    \item The main difference is: \textbf{the control flow is not broken!} Manual handling is required.
+    \item \textit{\quotes{If a tree falls in a forest and no one is around to hear it, does it make a sound?}}
+\end{itemize}
 \end{frame}
 
 
 \begin{frame}{Overview of the patterns}
-    \begin{enumerate}
-        \item Return codes
-        \item Return indicator of work done
-        \item Return impossible value
-        \item Output function parameters
-        \item NULL pointers
-        \item Floating point values
-        \item \texttt{<errno.h>} and global error codes
-        \item \texttt{<jmp.h>}
-        \item SQL and NULL
-    \end{enumerate}
+\begin{enumerate}
+    \item Return codes
+    \item Return indicator of work done
+    \item Return impossible value
+    \item Output function parameters
+    \item NULL pointers
+    \item Floating point values
+    \item \texttt{<errno.h>} and global error codes
+    \item \texttt{<jmp.h>}
+    \item SQL and NULL
+\end{enumerate}
 \end{frame}
 
 
@@ -150,7 +150,7 @@ def update_software():
 
 \begin{frame}{Return codes}
 \begin{itemize}
-    \item The function's return value indicate its execution success or failure
+    \item The function's return value indicates its execution success or failure
     \item Different levels of detail in the output
     \item A potential way to categorize them\footnote{This is just my proposal, as often all these terms are used as synonyms}
     \begin{enumerate}
@@ -171,20 +171,20 @@ bool receive_message(message_t* message);
 int receive_message(message_t* message);
 \end{lstlisting}
 
-    \begin{description}
-        \item[\texttt{true}] (or non-0) on success
-        \item[\texttt{false}] (or 0) on failure
-    \end{description}
+\begin{description}
+    \item[\texttt{true}] (or non-0) on success
+    \item[\texttt{false}] (or 0) on failure
+\end{description}
 \end{frame}
 
 
 \begin{frame}[fragile]{Boolean return code: consequences}
-    \begin{itemize}
-        \item Why did it fail?
-        \item Can we retry or not?
-        \item Can we tune the receving settings based on the error?
-        \item Does \texttt{false} indicate \quotes{no error} or \quotes{no success}?
-    \end{itemize}
+\begin{itemize}
+    \item Why did it fail?
+    \item Can we retry or not?
+    \item Can we tune the receving settings based on the error?
+    \item Confusing: does \texttt{false} indicate \quotes{no error} or \quotes{no success}?
+\end{itemize}
 \end{frame}
 
 
@@ -221,19 +221,19 @@ rx_code_t receive_message(message_t* message);
 \end{lstlisting}
 
 \begin{description}
-    \item[\texttt{RX\_OK}] on success. OK is (\texttt{false}) to indicate the \textit{absence} of errors.
+    \item[\texttt{RX\_OK}] on success. OK is \texttt{false} to indicate the \textit{absence} of errors.
     \item[Others] on failure
 \end{description}
 \end{frame}
 
 
 \begin{frame}[fragile]{Error code: consequences}
-    \begin{itemize}
-        \item Cleaner setup
-        \item We can handle different failure cases in different ways
-        \item Easy to remember which value is the success: the \texttt{false} value
-        \item Longer code handling the cases
-    \end{itemize}
+\begin{itemize}
+    \item Cleaner setup
+    \item We can handle different failure cases in different ways
+    \item Easy to remember which value is the success: the \texttt{false} value
+    \item Longer code handling the cases
+\end{itemize}
 \end{frame}
 
 
@@ -284,6 +284,16 @@ do {
     }
 } while (keep_receiving);
 \end{lstlisting}
+\end{frame}
+
+\begin{frame}{Usage examples: process exit status}
+\begin{itemize}
+    \item Also known as \textit{exit code} or \textit{error level}.
+    \item It's a value that a process running on an OS returns after its termination to the parent process.
+    \item It's an integer value (usually \texttt{int32}) where 0 means OK: process completed successfully.
+    \item The meaning of the non-zero values (why the process failed) is not standardized: every OS has a different list of recommended/preferred interpretations.
+    \item In C, it's the \texttt{int} value returned by the \texttt{main} function. Alternatively the \texttt{exit()} function can be used to terminate the program at any point with the specified exit code to be returned.
+\end{itemize}
 \end{frame}
 
 
@@ -464,6 +474,7 @@ rx_code_t receive_message(message_t* message) {
 \begin{frame}{Sources}
     \begin{itemize}
         \item \url{https://en.wikipedia.org/wiki/Exception_handling}
+        \item \url{https://en.wikipedia.org/wiki/Exit_status}
         \item Robert C. Martin, \textit{Clean Code: A Handbook of Agile Software Craftsmanship}, ISBN-10: 9780132350884 
     \end{itemize}
     
