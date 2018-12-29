@@ -205,10 +205,10 @@ int receive_message(message_t* message);
 
 \begin{frame}[fragile]{Boolean return code: consequences}
 \begin{itemize}
-    \item Why did it fail?
-    \item Can we retry or not?
-    \item Can we tune the receving settings based on the error?
-    \item Confusing: does \texttt{false} indicate \quotes{no error} or \quotes{no success}?
+    \item[\bad] Why did it fail?
+    \item[\bad] Can we retry or not?
+    \item[\bad] Can we tune the receving settings based on the error?
+    \item[\bad] Confusing: does \texttt{false} indicate \quotes{no error} or \quotes{no success}?
 \end{itemize}
 \end{frame}
 
@@ -257,11 +257,20 @@ rx_code_t receive_message(message_t* message);
 
 \begin{frame}[fragile]{Error code: consequences}
 \begin{itemize}
-    \item Cleaner setup
-    \item We can handle different failure cases in different ways
-    \item Easy to remember which value is the success: the \texttt{false} value
-    \item Longer code handling the cases
-    \item \textbf{Arguably the most common pattern!}
+    \item[\good] Cleaner setup
+    \item[\good] We can handle different failure cases in different ways
+    \item[\good] Easy to remember which value is the success: the \texttt{false} value
+    \item[\good] Can also be used in binary/encoded/serialized messages
+                 \begin{small}
+\begin{lstlisting}[style=cstyle]
+struct {
+    uint8_t error_code;  // Indicate if the value makes sense
+    uint32_t value;      // Value to transmit
+}
+\end{lstlisting}
+                 \end{small}
+    \item[\good] \textbf{Arguably the most common pattern!}
+    \item[\bad] Longer code handling the cases
 \end{itemize}
 \end{frame}
 
@@ -346,22 +355,23 @@ enum status_code_t {
 
 status_code_t process_message(message_t* message);
 \end{lstlisting}
+
+Multiple ways to complete a task (e.g. Strategy) and we known which one was chosen.
 \end{frame}
 
 
 
 \begin{frame}[fragile]{Status code: consequences}
 \begin{itemize}
-    \item Multiple ways to complete a task (Strategy) and we known which one was chosen
-    \item We can handle different success cases in different ways
-    \item May be confusing
-    \item Ofter macros are used to group \quotes{OK}-states, which results in a regular error code
+    \item[\good] We can handle different success cases in different ways
+    \item[\bad] Easily confusing
+    \item[\bad] Often macros are used to group \quotes{OK}-states, which results in a regular error code
 \end{itemize}
 \end{frame}
 
 
 
-\begin{frame}[fragile]{Cleaner setup}
+\begin{frame}[fragile]{Status code split setup}
 \begin{lstlisting}[style=cstyle]
 enum error_code_t {
     STATUS_OK = 0,
@@ -382,11 +392,12 @@ error_code_t process_message(message_t* message,
 
 
 
-\begin{frame}[fragile]{Cleaner setup: consequences}
+\begin{frame}[fragile]{Status code split setup: consequences}
 \begin{itemize}
-    \item Now we need to handle two values instead of one
-    \item What is the value of \texttt{extra} if an error happens during processing?
-    \item What happens if I pass a \texttt{NULL} pointer for \texttt{extra}?
+    \item[\good] We separated the execution success/failure indicator from the additional information
+    \item[\bad] Now we need to handle two values instead of one
+    \item[\bad] What is the value of \texttt{extra} if an error happens during processing?
+    \item[\meh] What happens if I pass a \texttt{NULL} pointer for \texttt{extra}?
 \end{itemize}
 \end{frame}
 
@@ -413,8 +424,7 @@ rx_code_t receive_message(message_t* message) {
 \begin{itemize}
     \item Returning the inner error code \texttt{encoding\_error} breaks abstraction layers
     \item Returning the outer error code \texttt{reception\_error} may hide details
-    \item Expanding the outer error code enum to contain also encoding errors may need too many values
-    \item Often one enum is used for a whole library with many values
+    \item Using only one enum to contain also encoding errors may need too many values (but commonly done as easy to handle)
     \item Combining the error code into a concatenated integer leads to confusion
 \end{itemize}
 \end{frame}
@@ -552,6 +562,18 @@ Returns the number of characters written: 0 or more. \textbf{Negative on failure
 
 
 
+\begin{frame}[fragile]{Outside the domain: consequences}
+\begin{itemize}
+    \item[\good] No need for additional enums
+    \item[\good] Easy to understand if something is wrong (e.g. negative length)
+    \item[\bad] Easy to forget to check and use error value as a good result
+    \item[\bad] Must read documentation of function in detail 
+    \item[\bad] Not possible if no value outside the domain exists
+\end{itemize}
+\end{frame}
+
+
+
 \begin{frame}[fragile]{Return values inside the domain}
 Also known as \textit{semipredicate problem}: how do I distinguish between a valid output and an error indicator?
 
@@ -583,14 +605,20 @@ But: \texttt{strtol()} sets second parameter \texttt{endptr} to first char after
 
 
 
+\begin{frame}[fragile]{Inside the domain: consequences}
+\begin{itemize}
+    \item[\bad] Extremely confusing
+    \item[\bad] Just never ever do that
+\end{itemize}
+\end{frame}
+
+
+
 
 \section{Embedded error indicator in value}
 
 \begin{frame}[fragile]{A simple pointer}
-A pointer to something may be NULL (have the value 0) to indicate the broken link.
-Otherwise it can be dereferenced.
-
-\textit{*cough* segmentation faults *cough*}
+A pointer to something may be \texttt{NULL} (have the value 0) to indicate the broken link. Otherwise it can be dereferenced.
 
 \begin{lstlisting}[style=cstyle]
 #include <stdio.h>
@@ -610,6 +638,19 @@ int main() {
 
 
 
+\begin{frame}[fragile]{A simple pointer: consequences}
+\begin{itemize}
+    \item[\good] Embedded in most programming languages
+    \item[\good] Every programmer understands: cannot work on \texttt{NULL}
+    \item[\good] No need for checking a separate error code
+    \item[\bad] Very to forget to check and dereference \texttt{NULL}
+    \item[\meh] In embedded environments may be possible work due to missing \texttt{malloc()}
+    \item[\meh] May make the code less readable (\texttt{int*} vs \texttt{int})
+\end{itemize}
+\end{frame}
+
+
+
 \begin{frame}{SQL}
 ISO SQL (structured query language) used to interrogate RDBMS:
 \begin{itemize}
@@ -624,6 +665,7 @@ ISO SQL (structured query language) used to interrogate RDBMS:
     \end{itemize}
 \end{itemize}
 \end{frame}
+
 
 
 
@@ -675,11 +717,22 @@ The IEEE encoding of the real numbers has embedded handling of special cases.
 
 
 
+\begin{frame}{IEEE 754 floating-point values: consequences}
+\begin{itemize}
+    \item[\good] IEEE standard since decades, really every computer supports it
+    \item[\good] Hardware accelerated
+    \item[\good] No need for pointer dereferencing or checking a separate error code
+    \item[\bad] Easy to forget to check with \texttt{isfinite()} in critical sections
+\end{itemize}
+\end{frame}
 
 
-\section{\texttt{errno.h}}
 
-\begin{frame}[fragile]{errno.h}
+
+
+\section{\texttt{<errno.h>}}
+
+\begin{frame}[fragile]{\texttt{errno.h}}
 A standard, glorified global error code.
 
 \begin{lstlisting}[style=cstyle]
@@ -702,9 +755,19 @@ int main() {
 
 
 
+\begin{frame}{\texttt{errno.h}: consequences}
+\begin{itemize}
+    \item[\good] Part of C standard library
+    \item[\bad] Easy to lose track who set the \texttt{errno} variable in nested code
+    \item[\bad] Global variables are bad
+\end{itemize}
+\end{frame}
 
 
-\section{\texttt{longjmp.h}}
+
+
+
+\section{\texttt{<longjmp.h>}}
 \begin{frame}{Setting and restoring a state}
 LOREM IPSUM
 \end{frame}
@@ -763,9 +826,31 @@ int main() {
 
 
 
+\begin{frame}{\texttt{longjmp.h}: consequences}
+\begin{itemize}
+    \item[\good] Breaking control flow
+    \item[\good] Good performance (avoiding functions return calls)
+    \item[\good] A way to implement exception-like behaviour
+    \item[\bad] Like \texttt{goto} but worse: may be very confusing
+    \item[\bad] Often readability is more important than premature optimization
+\end{itemize}
+\end{frame}
+
+
+
 
 
 \section{Conclusion}
+
+\begin{frame}{Wrapping up}
+\begin{itemize}
+    \item If your programming language supports option types: use them
+    \item Otherwise go with return error codes: 0 for OK, other values for error cases
+    \item Write the error handling code with care, focus on readability
+\end{itemize}
+\end{frame}
+
+
 
 \begin{frame}{Sources}
 \begin{small}
