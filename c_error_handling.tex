@@ -386,36 +386,6 @@ rx_code_t receive_message(message_t* message) {
 \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{errno.h}
-\begin{lstlisting}[style=cstyle]
-#include <stdio.h>
-#include <errno.h>   // To access the integer `errno`
-#include <string.h>  // To convert `errno` to a human-readable string with strerror
-
-int main() {
-    printf("At startup: %s\n", strerror(errno));
-    FILE *file = fopen("NON_existing_file.txt", "r");
-    if (file == NULL) {
-        printf("After fopen fails: %s\n", strerror(errno));
-    } else {
-        fclose(file);
-    }
-    return 0;
-}
-\end{lstlisting}
-\end{frame}
-
-\begin{frame}[fragile]{errno.h (cont.)}
-\begin{lstlisting}[style=nostyle]
-$ gcc errno_example.c -o errno_example && ./errno_example
-At startup: Undefined error: 0
-After fopen fails: No such file or directory
-\end{lstlisting}
-\end{frame}
-
-
-\section{Other error signaling systems}
-
 
 \section{A note on the code style}
 
@@ -515,12 +485,98 @@ rx_code_t receive_message(message_t* message) {
 \end{enumerate}
 \end{frame}
 
+
+\section{Using the return value domain}
+\begin{frame}[fragile]{Return values outside the domain}
+
+\begin{itemize}
+    \item The function returns a value, not a return code.
+    \item The value has a limited domain.
+    \item When out of bounds, indicates an error.
+\end{itemize}
+
+Example: writing formatted strings to a file.
+
+\begin{lstlisting}[style=cstyle]
+int fprintf ( FILE * stream, const char * format, ... );
+\end{lstlisting}
+
+Returns the number of characters written: 0 or more. \textbf{Negative on failure}. 
+\end{frame}
+
+
+\begin{frame}[fragile]{Return values inside the domain}
+Also known as \textit{semipredicate problem}: how do I distinguish between a valid output and an error indicator?
+
+Example: parsing a string for an integer value.
+
+\begin{lstlisting}[style=cstyle]
+long int strtol (const char* str, char** endptr, int base);
+\end{lstlisting}
+
+Returns the converted integer. If no valid conversion could be performed, returns 0.
+\end{frame}
+
+\begin{frame}[fragile]{Return values inside the domain (cont.)}
+What happens if the input string contains a zero digit?
+
+\begin{lstlisting}[style=cstyle]
+strtol("12", NULL, 10); // returns 12
+
+strtol("0", NULL, 10);  // returns 0
+
+strtol("fdjkfnskxg", NULL, 10);  // returns 0 as well!
+\end{lstlisting}
+
+But: \texttt{strtol()} sets second parameter \texttt{endptr} to first char after the parsed number. On failed parsing \texttt{str == endptr}.
+\end{frame}
+
+
+
+\section{\texttt{errno.h}}
+
+\begin{frame}[fragile]{errno.h}
+A standard, glorified global error code.
+
+\begin{lstlisting}[style=cstyle]
+#include <stdio.h>
+#include <errno.h>   // To access the integer `errno`
+#include <string.h>  // To convert `errno` to a human-readable string with strerror()
+
+int main() {
+    printf("At startup = %s\n", strerror(errno));
+    FILE* file = fopen("NON_existing_file.txt", "r");
+    if (file == NULL) {
+        printf("After fopen fails = %s\n", strerror(errno));
+    } else {
+        fclose(file);
+    }
+    return 0;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{errno.h (cont.)}
+Output on execution:
+
+\begin{lstlisting}[style=nostyle]
+$ gcc errno_example.c -o errno_example && ./errno_example
+At startup = Undefined error: 0
+After fopen fails = No such file or directory
+\end{lstlisting}
+\end{frame}
+
+
+
+\section{Other error signaling systems}
+
 \section{Conclusion}
 
 \begin{frame}{Sources}
     \begin{itemize}
         \item \url{https://en.wikipedia.org/wiki/Exception_handling}
         \item \url{https://en.wikipedia.org/wiki/Exit_status}
+        \item \url{http://www.cplusplus.com/reference/}
         \item Robert C. Martin, \textit{Clean Code: A Handbook of Agile Software Craftsmanship}, ISBN-10: 9780132350884 
     \end{itemize}
     
