@@ -532,7 +532,6 @@ But: \texttt{strtol()} sets second parameter \texttt{endptr} to first char after
 \end{frame}
 
 
-
 \section{\texttt{errno.h}}
 
 \begin{frame}[fragile]{errno.h}
@@ -567,6 +566,51 @@ After fopen fails = No such file or directory
 \end{frame}
 
 
+\section{Embedded error indicator in value}
+\begin{frame}{IEEE 754 floating-point values}
+
+The IEEE encoding of the real numbers has embedded handling of special cases.
+
+\begin{itemize}
+    \item \( + \infty \)
+    \begin{itemize}
+        \item division by (positive) zero: \texttt{1.0/0.0}
+        \item overflows: \texttt{pow(10.0, 500.0)}
+        \item always bigger than any other value
+        \item to check: \texttt{isinf(value) \&\& value > 0}
+    \end{itemize}
+
+    \item \( - \infty \)
+    \begin{itemize}
+        \item division of negative value by zero: \texttt{-1.0/0.0}
+        \item or by negative zero: \texttt{1.0/-0.0}
+        \item underflows: \texttt{pow(-10.0, 501.0)}
+        \item always smaller than any other value
+        \item to check: \texttt{isinf(value) \&\& value < 0}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{IEEE 754 floating-point values (cont.)}
+\begin{itemize}
+    \item \texttt{NaN} (Not a Number)
+    \begin{itemize}
+        \item invalid operations
+        \begin{itemize}
+            \item \texttt{0.0/0.0}
+            \item \texttt{Infinity * 0.0}
+            \item \texttt{sqrt(-1.0)}
+        \end{itemize}
+        \item propagating: operations on a \texttt{NaN} return \texttt{NaN}
+        \item comparing with a \texttt{NaN} always returns \texttt{false}
+        \item has a quiet (just returning) and signaling variant (FPU/floatlib indicates error to the system)
+        \item it even has free bits to encode type of error (rare)
+        \item \texttt{isnan(value)} to check
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+
 
 \section{Other error signaling systems}
 
@@ -577,6 +621,7 @@ After fopen fails = No such file or directory
         \item \url{https://en.wikipedia.org/wiki/Exception_handling}
         \item \url{https://en.wikipedia.org/wiki/Exit_status}
         \item \url{http://www.cplusplus.com/reference/}
+        \item \url{https://en.wikipedia.org/wiki/Floating-point_arithmetic\#Special_values}
         \item Robert C. Martin, \textit{Clean Code: A Handbook of Agile Software Craftsmanship}, ISBN-10: 9780132350884 
     \end{itemize}
     
