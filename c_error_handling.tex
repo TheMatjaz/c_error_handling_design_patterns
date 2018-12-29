@@ -381,6 +381,7 @@ rx_code_t receive_message(message_t* message) {
     \item Returning the inner error code \texttt{encoding\_error} breaks abstraction layers
     \item Returning the outer error code \texttt{reception\_error} may hide details
     \item Expanding the outer error code enum to contain also encoding errors may need too many values
+    \item Often one enum is used for a whole library with many values
     \item Combining the error code into a concatenated integer leads to confusion
 \end{itemize}
 \end{frame}
@@ -424,9 +425,9 @@ rx_code_t receive_message(message_t* message) {
     receiver_config_t config;  rx_code_t error_code;
     
     error_code = load_receiver_config_from_storage(&config);
-    if (error_code) { return error_code; }  // Always use brackets
+    if (error_code) return error_code;  // Bad, missing brackets
     error_code = receiver_enable_peripheral();
-    if (error_code) { return error_code; }
+    if (error_code) { return error_code; }  // Always use brackets
     error_code = receiver_configure(&config);
     if (error_code) { return error_code; }
     error_code = receiver_receive(message);
@@ -499,6 +500,19 @@ rx_code_t receive_message(message_t* message) {
     }
 }
 \end{lstlisting}
+\end{frame}
+
+\begin{frame}{My personal rules for \texttt{goto}}
+\begin{enumerate}
+    \item Avoid it, if you can.
+    \item Use only \textbf{one label per function} with a clear name:
+        \begin{itemize}
+            \item Good: \texttt{goto termination}, \texttt{goto error\_handling}
+            \item Bad: \texttt{goto failure}  (Does it jump to a failing point or handles a failure?)
+        \end{itemize}
+    \item Only jump \textbf{downwards in the code} (i.e. skip some instruction, don’t cycle them).
+    \item Only jump \textbf{within the same function}, better if only to the function end (\texttt{return} call).
+\end{enumerate}
 \end{frame}
 
 \section{Conclusion}
