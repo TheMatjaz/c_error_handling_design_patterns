@@ -130,6 +130,13 @@ def update_software():
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Problem and forces}
+\begin{itemize}
+    \item Need a way to indicate to the function caller that something could not be done and why.
+    \item Exceptions are not available.
+    \item Must be simple, lightweight, efficient, easy to understand.
+\end{itemize}
+\end{frame}
 
 \begin{frame}{Overview of the patterns}
 \begin{enumerate}
@@ -222,7 +229,7 @@ rx_code_t receive_message(message_t* message);
 
 \begin{description}
     \item[\texttt{RX\_OK}] on success. OK is \texttt{false} to indicate the \textit{absence} of errors.
-    \item[Others] on failure
+    \item[Others] on failure. The actual value indicates the exact reason.
 \end{description}
 \end{frame}
 
@@ -233,6 +240,7 @@ rx_code_t receive_message(message_t* message);
     \item We can handle different failure cases in different ways
     \item Easy to remember which value is the success: the \texttt{false} value
     \item Longer code handling the cases
+    \item \textbf{Arguably the most common pattern!}
 \end{itemize}
 \end{frame}
 
@@ -289,10 +297,10 @@ do {
 \begin{frame}{Usage examples: process exit status}
 \begin{itemize}
     \item Also known as \textit{exit code} or \textit{error level}.
-    \item It's a value that a process running on an OS returns after its termination to the parent process.
-    \item It's an integer value (usually \texttt{int32}) where 0 means OK: process completed successfully.
-    \item The meaning of the non-zero values (why the process failed) is not standardized: every OS has a different list of recommended/preferred interpretations.
-    \item In C, it's the \texttt{int} value returned by the \texttt{main} function. Alternatively the \texttt{exit()} function can be used to terminate the program at any point with the specified exit code to be returned.
+    \item A value that a process running on an OS returns after its termination to the parent process.
+    \item Usually \texttt{int32} where 0 means OK: process completed successfully.
+    \item Meaning of the non-zero values (why the process failed) is not standardized: every OS has a different list of recommended/preferred interpretations.
+    \item In C it's the \texttt{int} value returned by the \texttt{main} function. Alternatively the \texttt{exit()} function can be used to terminate the program at any point with the specified exit code to be returned.
 \end{itemize}
 \end{frame}
 
@@ -345,13 +353,37 @@ error_code_t process_message(message_t* message,
 
 
 \begin{frame}[fragile]{Cleaner setup: consequences}
-    \begin{itemize}
-        \item Now we need to handle two values instead of one
-        \item What is the value of \texttt{extra} if an error happens during processing?
-        \item What happens if I pass a \texttt{NULL} pointer for \texttt{extra}?
-    \end{itemize}
+\begin{itemize}
+    \item Now we need to handle two values instead of one
+    \item What is the value of \texttt{extra} if an error happens during processing?
+    \item What happens if I pass a \texttt{NULL} pointer for \texttt{extra}?
+\end{itemize}
 \end{frame}
 
+
+\begin{frame}[fragile]{Nested return codes problem}
+\begin{lstlisting}[style=cstyle]
+rx_code_t receive_message(message_t* message) {
+    rx_code_t reception_error = RX_OK;
+    encoding_code_t encoding_error ENC_OK;
+    
+    encoding_error = prepare_message(message);
+    if (encoding_error) {
+        return ???;  // Which error code should we return?
+    }
+    ...
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Nested return codes problem (cont.)}
+\begin{itemize}
+    \item Returning the inner error code \texttt{encoding\_error} breaks abstraction layers
+    \item Returning the outer error code \texttt{reception\_error} may hide details
+    \item Expanding the outer error code enum to contain also encoding errors may need too many values
+    \item Combining the error code into a concatenated integer leads to confusion
+\end{itemize}
+\end{frame}
 
 \begin{frame}[fragile]{errno.h}
 \begin{lstlisting}[style=cstyle]
