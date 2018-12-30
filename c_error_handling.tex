@@ -57,7 +57,7 @@
         \item Error flags
         \item Status/state codes
     \end{enumerate}
-    \item Code style for return codes
+    \item Code design choices with return codes
     \item Using the return value's domain
     \item Embedded error indicator in data type
     \item \texttt{<errno.h>}
@@ -420,7 +420,10 @@ error_code_t process_message(message_t* message,
 
 
 
-\begin{frame}[fragile]{Nested return codes }
+
+\section{Code design choices with return codes}
+
+\begin{frame}[fragile]{Nested return codes problem}
 \begin{lstlisting}[style=cstyle]
 rx_code_t receive_message(message_t* message) {
     rx_code_t reception_error = RX_OK;
@@ -471,8 +474,6 @@ Common solutions: break abstraction layers
 \end{frame}
 
 
-
-\section{Code style\\ for return codes}
 
 \begin{frame}[fragile]{Stopping flow with multiple \texttt{return}}
 \begin{lstlisting}[style=cstyle]

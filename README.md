@@ -15,7 +15,7 @@ Topics
   - Error codes
   - Error flags
   - Status/state codes
-- Code style for return codes
+- Code design choices with return codes
 - Using the return value's domain
 - Embedded error indicator in value
 - `<errno.h>`
