@@ -11,6 +11,10 @@ Topics
 
 - A brief recap over Exceptions
 - Return codes
+  - Boolean codes
+  - Error codes
+  - Error flags
+  - Status/state codes
 - Code style for return codes
 - Using the return value's domain
 - Embedded error indicator in value

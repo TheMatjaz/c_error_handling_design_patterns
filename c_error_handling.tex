@@ -51,6 +51,12 @@
 \begin{enumerate}
     \item A brief recap over Exceptions
     \item Return codes
+    \begin{enumerate}
+        \item Boolean codes
+        \item Error codes
+        \item Error flags
+        \item Status/state codes
+    \end{enumerate}
     \item Code style for return codes
     \item Using the return value's domain
     \item Embedded error indicator in value
@@ -58,9 +64,7 @@
     \item \texttt{<setjmp.h>}
 \end{enumerate}
 
-\begin{block}{Note}
-It will be very code-based and development-focused
-\end{block}
+\textbf{Note}: it will be very code-based and development-focused
 \end{frame}
 
 
@@ -75,20 +79,20 @@ In OOP languages we commonly have the \textbf{Exception} classes used to handle:
     \item unexpected values or states
     \item special cases
     \item non-nominal situations
-    \item ... basically something that cannot be handled the normal way
+    \item ... something that cannot be handled the normal way
 \end{itemize}
 \end{frame}
 
 
 
 \begin{frame}{Control flow break}
-When one Exception object is raised/thrown
+When an Exception object is raised/thrown:
 \begin{itemize}
-    \item it breaks the normal execution flow
+    \item breaks the execution flow
     \item makes the current function return early
     \item repeats the same on every function in the stack towards the \texttt{main()}
-    \item stops when caught with a \texttt{try-catch} block
-    \item or makes the program terminate abruptly if nothing catches it
+    \item stops if caught by a \texttt{try-catch} block
+    \item or makes the program crash
 \end{itemize}
 \end{frame}
 
@@ -96,8 +100,12 @@ When one Exception object is raised/thrown
 
 \begin{frame}{Advantages of exceptions}
 \begin{itemize}
-    \item The biggest advantage of exceptions is the break of the control flow
-    \item It allows separation of the nominal behaviour and the error handling behaviour
+    \item Biggest advantage: break of the control flow
+    \item Allows separation of:
+    \begin{itemize}
+        \item nominal behaviour
+        \item error-handling behaviour
+    \end{itemize}
     \item It's nicer to read
 \end{itemize}
 \end{frame}
@@ -141,10 +149,10 @@ def update_software():
 
 \begin{frame}{But...}
 \begin{itemize}
-    \item Many programming languages were created before OOP was even a thing
+    \item Many programming languages were created before OOP was even a thing (duh...)
     \item Examples: Fortran, C, Cobol, Pascal or the more modern Rust
-    \item Other patterns were found at the time and are still in use today
-    \item The main difference is: \textbf{the control flow is not broken!} Manual handling is required.
+    \item Other patterns took place, still in use today
+    \item Main difference: \textbf{the control flow is not broken!} Manual handling is required.
     \item \textit{\quotes{If a tree falls in a forest and no one is around to hear it, does it make a sound?}}
 \end{itemize}
 \end{frame}
@@ -164,6 +172,12 @@ def update_software():
 \begin{frame}{Overview of the patterns}
 \begin{enumerate}
     \item Return codes
+    \begin{enumerate}
+        \item Boolean codes
+        \item Error codes
+        \item Error flags
+        \item Status/state codes
+    \end{enumerate}
     \item Using the return value's domain
     \item Embedded error indicator in value
     \item \texttt{<errno.h>}
@@ -185,6 +199,7 @@ def update_software():
     \begin{enumerate}
         \item Boolean codes
         \item Error codes
+        \item Error flags
         \item Status/state codes
     \end{enumerate}
 \end{itemize}
@@ -243,20 +258,20 @@ Hard to remember if the negation is needed or not.
 
 \begin{frame}[fragile]{Error code}
 \begin{lstlisting}[style=cstyle]
-enum rx_code_t {
-    RX_OK = 0x00,
-    ERROR_TIMEOUT_NOTHING_RECEIVED = 0x01,
-    ERROR_BROKEN_CRC = 0x02,
-    ERROR_INCOMPLETE_MESSAGE = 0x04,
-    ERROR_ANTENNA_DISCONNECTED = 0x08,
-}
+typedef enum {
+    RX_OK = 0,
+    ERROR_TIMEOUT_NOTHING_RECEIVED,
+    ERROR_BROKEN_CRC,
+    ERROR_INCOMPLETE_MESSAGE,
+    ERROR_ANTENNA_DISCONNECTED,
+} rx_code_t;
 
 rx_code_t receive_message(message_t* message);
 \end{lstlisting}
 
 \begin{description}
     \item[\texttt{RX\_OK}] on success. OK is \texttt{false} to indicate the \textit{absence} of errors.
-    \item[Others] on failure. The actual value indicates the exact reason (or multiple reasons when used as bit flags)
+    \item[Others] on failure. The actual value indicates the exact reason.
 \end{description}
 \end{frame}
 
@@ -343,6 +358,44 @@ do {
     \item Usually \texttt{int32} where 0 means OK: process completed successfully.
     \item Meaning of the non-zero values (why the process failed) is not standardized: every OS has a different list of recommended/preferred interpretations.
     \item In C it's the \texttt{int} value returned by the \texttt{main} function. Alternatively the \texttt{exit()} function can be used to terminate the program at any point with the specified exit code to be returned.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Error flags}
+\begin{lstlisting}[style=cstyle]
+typedef enum {
+    // Bit flags, each value on different bit
+    RX_OK = 0x00,
+    ERROR_TIMEOUT_NOTHING_RECEIVED = 0x01,
+    ERROR_BROKEN_CRC = 0x02,
+    ERROR_INCOMPLETE_MESSAGE = 0x04,
+    ERROR_ANTENNA_DISCONNECTED = 0x08,
+} rx_flag_t;
+typedef uint8_t rx_code_t;
+
+rx_code_t receive_message(message_t* message);
+\end{lstlisting}
+
+\begin{description}
+    \item[\texttt{RX\_OK}] on success. No flags or \texttt{false} to indicate the \textit{absence} of errors.
+    \item[Any flag(s)] on failure. Each bit expresses one reason. More than one reason possible \textbf{simultaneously}.
+\end{description}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Error flags: consequences}
+In addition to the consequences of Error codes:
+
+\begin{itemize}
+    \item[\good] Useful if multiple failures can happen simultaneously
+    \item[\good] Can still be used if only one failure at the time
+    \item[\good] Easy to remember which value is the success: the \texttt{false} value
+    \item[\bad] \(N\) bits indicate only \(N\) errors. Error codes indicate \(2^N - 1\). Bigger integer types may be needed.
+    \item[\bad] Even longer code handling the cases (e.g. a series of \texttt{if-if-if} but not \texttt{switch-case})
+    \item[\bad] Macros are required to group same-category flags
 \end{itemize}
 \end{frame}
 
