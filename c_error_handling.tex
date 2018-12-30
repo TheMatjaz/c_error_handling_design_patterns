@@ -617,6 +617,45 @@ But: \texttt{strtol()} sets second parameter \texttt{endptr} to first char after
 
 \section{Embedded error indicator in value}
 
+\begin{frame}{Nullable and option(al) types}
+\begin{itemize}
+    \item \textbf{Nullable types}: the type system supports every value to be either \texttt{NULL} indicating missing data or a value.
+    \begin{itemize}
+        \item In Python anything can be \texttt{None}
+        \item In SQL anything can be \texttt{NULL}
+        \item In Java non-primitives only (\texttt{int} no, \texttt{Integer} yes): \textit{Null object pattern}
+        \item In C works only with pointers
+    \end{itemize}
+    \item \textbf{Option(al) types}: polymorphic type representing a value that may or may not have meaning. Mostly functional languages.
+    \begin{itemize}
+        \item In Rust: \texttt{enum Option<T> \{ None, Some(T) \}}
+        \item In Haskell: \texttt{data Maybe a = Nothing | Just a}
+        \item In C\#: \texttt{Nullable<T>} or \texttt{T?}
+        \item In C manually:\\ \texttt{struct \{ uint8\_t error\_code; uint32\_t value; \}}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Nullable types: example from SQL}
+ISO SQL (structured query language) used to interrogate RDBMS:
+
+\begin{itemize}
+    \item every value can also be \texttt{NULL} (in functions) indicating missing data
+    \item functions often return either the value or \texttt{NULL} in case of error
+    \item the three-valued logic makes \texttt{NULL} behave similar as the "undefined" value. Examples:
+    \begin{itemize}
+        \item \texttt{NULL AND  TRUE → NULL}
+        \item \texttt{NULL AND FALSE → FALSE}
+        \item \texttt{NULL AND  NULL → NULL}
+        \item \texttt{NULL  OR  NULL → NULL}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
 \begin{frame}[fragile]{A simple pointer}
 A pointer to something may be \texttt{NULL} (have the value 0) to indicate the broken link. Otherwise it can be dereferenced.
 
@@ -651,26 +690,7 @@ int main() {
 
 
 
-\begin{frame}{SQL}
-ISO SQL (structured query language) used to interrogate RDBMS:
-\begin{itemize}
-    \item every value can also be \texttt{NULL} (in functions)
-    \item functions often return either the value or \texttt{NULL} in case of error
-    \item the three-valued logic makes \texttt{NULL} behave similar as the "undefined" value. Examples:
-    \begin{itemize}
-        \item \texttt{NULL AND  TRUE → NULL}
-        \item \texttt{NULL AND FALSE → FALSE}
-        \item \texttt{NULL AND  NULL → NULL}
-        \item \texttt{NULL  OR  NULL → NULL}
-    \end{itemize}
-\end{itemize}
-\end{frame}
-
-
-
-
 \begin{frame}{IEEE 754 floating-point values}
-
 The IEEE encoding of the real numbers has embedded handling of special cases.
 
 \begin{itemize}
@@ -877,9 +897,10 @@ int main() {
 \begin{frame}{Sources}
 \begin{small}
     \begin{itemize}
+        \item \url{http://www.cplusplus.com/reference/}
         \item \url{https://en.wikipedia.org/wiki/Exception_handling}
         \item \url{https://en.wikipedia.org/wiki/Exit_status}
-        \item \url{http://www.cplusplus.com/reference/}
+        \item \url{https://en.wikipedia.org/wiki/Nullable_type}
         \item \url{https://en.wikipedia.org/wiki/Floating-point_arithmetic\#Special_values}
         \item Robert C. Martin, \textit{Clean Code: A Handbook of Agile Software Craftsmanship}, ISBN-10: 9780132350884 
     \end{itemize}
