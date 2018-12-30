@@ -237,11 +237,11 @@ Hard to remember if the negation is needed or not.
 \begin{frame}[fragile]{Error code}
 \begin{lstlisting}[style=cstyle]
 enum rx_code_t {
-    RX_OK = 0,
-    ERROR_TIMEOUT_NOTHING_RECEIVED,
-    ERROR_BROKEN_CRC,
-    ERROR_INCOMPLETE_MESSAGE,
-    ERROR_ANTENNA_DISCONNECTED,
+    RX_OK = 0x00,
+    ERROR_TIMEOUT_NOTHING_RECEIVED = 0x01,
+    ERROR_BROKEN_CRC = 0x02,
+    ERROR_INCOMPLETE_MESSAGE = 0x04,
+    ERROR_ANTENNA_DISCONNECTED = 0x08,
 }
 
 rx_code_t receive_message(message_t* message);
@@ -249,7 +249,7 @@ rx_code_t receive_message(message_t* message);
 
 \begin{description}
     \item[\texttt{RX\_OK}] on success. OK is \texttt{false} to indicate the \textit{absence} of errors.
-    \item[Others] on failure. The actual value indicates the exact reason.
+    \item[Others] on failure. The actual value indicates the exact reason (or multiple reasons when used as bit flags)
 \end{description}
 \end{frame}
 
