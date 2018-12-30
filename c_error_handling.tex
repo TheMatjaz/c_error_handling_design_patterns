@@ -48,7 +48,7 @@
     \item Using the return value's domain
     \item Embedded error indicator in value
     \item \texttt{<errno.h>}
-    \item \texttt{<longjmp.h>}
+    \item \texttt{<setjmp.h>}
 \end{enumerate}
 
 \begin{block}{Note}
@@ -269,7 +269,7 @@ struct {
 }
 \end{lstlisting}
                  \end{small}
-    \item[\good] \textbf{Arguably the most common pattern!}
+    \item[\good] \textbf{Arguably the most common pattern} outside of libc
     \item[\bad] Longer code handling the cases
 \end{itemize}
 \end{frame}
@@ -732,7 +732,7 @@ The IEEE encoding of the real numbers has embedded handling of special cases.
 
 \section{\texttt{<errno.h>}}
 
-\begin{frame}[fragile]{\texttt{errno.h}}
+\begin{frame}[fragile]{\texttt{<errno.h>}}
 A standard, glorified global error code.
 
 \begin{lstlisting}[style=cstyle]
@@ -755,7 +755,7 @@ int main() {
 
 
 
-\begin{frame}{\texttt{errno.h}: consequences}
+\begin{frame}{\texttt{<errno.h>}: consequences}
 \begin{itemize}
     \item[\good] Part of C standard library
     \item[\bad] Easy to lose track who set the \texttt{errno} variable in nested code
@@ -767,9 +767,31 @@ int main() {
 
 
 
-\section{\texttt{<longjmp.h>}}
-\begin{frame}{Setting and restoring a state}
-LOREM IPSUM
+\section{\texttt{<setjmp.h>}}
+
+\begin{frame}[fragile]{\texttt{<setjmp.h>}}
+\begin{lstlisting}[style=cstyle]
+int setjmp (jmp_buf env);
+\end{lstlisting}
+\begin{itemize}
+    \item Fills \texttt{env} with the current state of the calling environment, so it can be restored later.
+    \item Returns 0 on direct invocation (when state is saved).
+    \item Otherwise returns the value (forcibly non-zero) passed by \texttt{longjmp()} (when state is restored).
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{\texttt{<setjmp.h>} (cont.)}
+\begin{lstlisting}[style=cstyle]
+void longjmp (jmp_buf env, int val);
+\end{lstlisting}
+\begin{itemize}
+    \item Restores stored \texttt{env}.
+    \item Transfers the control to the point where \texttt{setjmp()} was last used to fill the \texttt{env}.
+    \item Makes \texttt{setjmp()} return \texttt{val}.
+    \item This function never returns (jumping to \texttt{setjmp()} before that).
+\end{itemize}
 \end{frame}
 
 
@@ -826,7 +848,7 @@ int main() {
 
 
 
-\begin{frame}{\texttt{longjmp.h}: consequences}
+\begin{frame}{\texttt{<setjmp.h>}: consequences}
 \begin{itemize}
     \item[\good] Breaking control flow
     \item[\good] Good performance (avoiding functions return calls)
