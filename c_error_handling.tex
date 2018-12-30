@@ -81,7 +81,7 @@ When one Exception object is raised/thrown
     \item makes the current function return early
     \item repeats the same on every function in the stack towards the \texttt{main()}
     \item stops when caught with a \texttt{try-catch} block
-    \item or makes the program terminate abruplty if nothing catches it
+    \item or makes the program terminate abruptly if nothing catches it
 \end{itemize}
 \end{frame}
 
@@ -160,7 +160,7 @@ def update_software():
     \item Using the return value's domain
     \item Embedded error indicator in value
     \item \texttt{<errno.h>}
-    \item \texttt{<longjmp.h>}
+    \item \texttt{<setjmp.h>}
 \end{enumerate}
 \end{frame}
 
@@ -207,7 +207,7 @@ int receive_message(message_t* message);
 \begin{itemize}
     \item[\bad] Why did it fail?
     \item[\bad] Can we retry or not?
-    \item[\bad] Can we tune the receving settings based on the error?
+    \item[\bad] Can we tune the receiving settings based on the error?
     \item[\bad] Confusing: does \texttt{false} indicate \quotes{no error} or \quotes{no success}?
 \end{itemize}
 \end{frame}
@@ -269,7 +269,7 @@ struct {
 }
 \end{lstlisting}
                  \end{small}
-    \item[\good] \textbf{Arguably the most common pattern} outside of libc
+    \item[\good] \textbf{Arguably the most common pattern} outside of \texttt{libc}
     \item[\bad] Longer code handling the cases
 \end{itemize}
 \end{frame}
