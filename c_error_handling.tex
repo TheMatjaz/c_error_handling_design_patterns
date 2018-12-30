@@ -50,7 +50,7 @@
 \begin{frame}{Overview}
 \begin{enumerate}
     \item A brief recap over Exceptions
-    \item Return codes
+    \item Return codes\\
     \begin{enumerate}
         \item Boolean codes
         \item Error codes
@@ -101,7 +101,7 @@ When an Exception object is raised/thrown:
 \begin{frame}{Advantages of exceptions}
 \begin{itemize}
     \item Biggest advantage: break of the control flow
-    \item Allows separation of:
+    \item Allows separation of:\\
     \begin{itemize}
         \item nominal behaviour
         \item error-handling behaviour
@@ -171,7 +171,7 @@ def update_software():
 
 \begin{frame}{Overview of the patterns}
 \begin{enumerate}
-    \item Return codes
+    \item Return codes\\
     \begin{enumerate}
         \item Boolean codes
         \item Error codes
@@ -195,7 +195,7 @@ def update_software():
 \begin{itemize}
     \item The function's return value indicates its execution success or failure
     \item Different levels of detail in the output
-    \item A potential way to categorize them\footnote{This is just my proposal, as often all these terms are used as synonyms}
+    \item A potential way to categorize them\footnote{This is just my proposal, as often all these terms are used interchangeably}\\
     \begin{enumerate}
         \item Boolean codes
         \item Error codes
@@ -228,8 +228,7 @@ int receive_message(message_t* message);
 \begin{frame}[fragile]{Boolean return code: consequences}
 \begin{itemize}
     \item[\bad] Why did it fail?
-    \item[\bad] Can we retry or not?
-    \item[\bad] Can we tune the receiving settings based on the error?
+    \item[\bad] Can we retry or not? Maybe with different settings?
     \item[\bad] Confusing: does \texttt{false} indicate \quotes{no error} or \quotes{no success}?
 \end{itemize}
 \end{frame}
@@ -354,10 +353,10 @@ do {
 \begin{frame}{Usage examples: process exit status}
 \begin{itemize}
     \item Also known as \textit{exit code} or \textit{error level}.
-    \item A value that a process running on an OS returns after its termination to the parent process.
+    \item Value that a process returns after its termination to the parent process.
     \item Usually \texttt{int32} where 0 means OK: process completed successfully.
-    \item Meaning of the non-zero values (why the process failed) is not standardized: every OS has a different list of recommended/preferred interpretations.
-    \item In C it's the \texttt{int} value returned by the \texttt{main} function. Alternatively the \texttt{exit()} function can be used to terminate the program at any point with the specified exit code to be returned.
+    \item Non-zero values are not standardized: every OS has a different list of recommended/preferred interpretations.
+    \item In C: the \texttt{int} value returned by \texttt{main()}. Alternatively the argument of \texttt{exit()}.
 \end{itemize}
 \end{frame}
 
@@ -380,7 +379,7 @@ rx_code_t receive_message(message_t* message);
 
 \begin{description}
     \item[\texttt{RX\_OK}] on success. No flags or \texttt{false} to indicate the \textit{absence} of errors.
-    \item[Any flag(s)] on failure. Each bit expresses one reason. More than one reason possible \textbf{simultaneously}.
+    \item[Any flag] on failure. Each bit expresses one reason. More than one reason possible \textbf{simultaneously}.
 \end{description}
 \end{frame}
 
@@ -403,14 +402,14 @@ In addition to the consequences of Error codes:
 
 \begin{frame}[fragile]{Status code}
 \begin{lstlisting}[style=cstyle]
-enum status_code_t {
+typedef enum {
     STATUS_OK_DETERMINISTIC = 0,
     STATUS_OK_PROBABILISTIC_HIGH_PROB,
     STATUS_OK_PROBABILISTIC_LOW_PROB,
     STATUS_ERROR_ILLEGAL_HEADER,
     STATUS_ERROR_ILLEGAL_CONTENT,
     STATUS_ERROR_ILLEGAL_ENCODING,
-}
+} status_code_t;
 #define STATUS_IS_OK(s) ((s) == STATUS_OK_DETERMINISTIC || (s) == STATUS_OK_PROBABILISTIC_HIGH_PROB || (s) == STATUS_OK_PROBABILISTIC_LOW_PROB )
 
 status_code_t process_message(message_t* message);
@@ -433,17 +432,17 @@ Multiple ways to complete a task (e.g. Strategy) and we known which one was chos
 
 \begin{frame}[fragile]{Status code split setup}
 \begin{lstlisting}[style=cstyle]
-enum error_code_t {
+typedef enum {
     STATUS_OK = 0,
     STATUS_ERROR_ILLEGAL_HEADER,
     STATUS_ERROR_ILLEGAL_CONTENT,
     STATUS_ERROR_ILLEGAL_ENCODING,
-}
-enum status_extra_t {
+} error_code_t;
+typedef enum {
     STATUS_EXTRA_DETERMINISTIC = 0,
     STATUS_EXTRA_PROBABILISTIC_HIGH_PROB,
     STATUS_EXTRA_PROBABILISTIC_LOW_PROB,
-}
+} status_extra_t;
 
 error_code_t process_message(message_t* message,
                              status_extra_t* extra);
@@ -467,7 +466,7 @@ error_code_t process_message(message_t* message,
 \begin{lstlisting}[style=cstyle]
 rx_code_t receive_message(message_t* message) {
     rx_code_t reception_error = RX_OK;
-    encoding_code_t encoding_error ENC_OK;
+    encoding_code_t encoding_error = ENC_OK;
     
     encoding_error = prepare_message(message);
     if (encoding_error) {
@@ -484,12 +483,34 @@ rx_code_t receive_message(message_t* message) {
 \begin{itemize}
     \item Returning the inner error code \texttt{encoding\_error} breaks abstraction layers
     \item Returning the outer error code \texttt{reception\_error} may hide details
-    \item Using only one enum to contain also encoding errors may need too many values (but commonly done as easy to handle)
+    \item Using only one \texttt{enum} to contain also encoding errors may need too many values (but commonly done as easy to handle)
     \item Combining the error code into a concatenated integer leads to confusion
 \end{itemize}
 \end{frame}
 
 
+
+\begin{frame}{Nested return codes problem (cont.)}
+Common solutions: break abstraction layers
+
+\begin{itemize}
+    \item Either one huge \texttt{enum} containing every possible error\\
+    \begin{itemize}
+        \item Each function inside the library uses the same error code data type
+        \item Just returning it to the upper layer
+    \end{itemize}
+    \item Or combined error code\\
+    \begin{itemize}
+        \item Example: ISO/IEC 7816 for smart cards uses \texttt{uint32}
+        \item 2 MS bytes for category (where failed)
+        \item 2 LS bytes for reason (what failed)
+        \item 0x9000 = OK\\
+        0x69xx = Something with the command\\
+        0x6900 = Command not allowed\\
+        0x6981 = Command not compatible with data structure
+    \end{itemize}
+\end{itemize}
+\end{frame}
 
 
 
@@ -586,7 +607,7 @@ rx_code_t receive_message(message_t* message) {
 \begin{frame}{My personal rules for \texttt{goto}}
 \begin{enumerate}
     \item Avoid it, if you can.
-    \item Use only \textbf{one label per function} with a clear name:
+    \item Use only \textbf{one label per function} with a clear name:\\
         \begin{itemize}
             \item Good: \texttt{goto termination}, \texttt{goto error\_handling}
             \item Bad: \texttt{goto failure}  (Does it jump to a failing point or handles a failure?)
@@ -675,40 +696,14 @@ But: \texttt{strtol()} sets second parameter \texttt{endptr} to first char after
 
 \section{Embedded error indicator in value}
 
-\begin{frame}{Nullable and option(al) types}
-\begin{itemize}
-    \item \textbf{Nullable types}: the type system supports every value to be either \texttt{NULL} indicating missing data or a value.
-    \begin{itemize}
-        \item In Python anything can be \texttt{None}
-        \item In SQL anything can be \texttt{NULL}
-        \item In Java non-primitives only (\texttt{int} no, \texttt{Integer} yes): \textit{Null object pattern}
-        \item In C works only with pointers
-    \end{itemize}
-    \item \textbf{Option(al) types}: polymorphic type representing a value that may or may not have meaning. Mostly functional languages.
-    \begin{itemize}
-        \item In Rust: \texttt{enum Option<T> \{ None, Some(T) \}}
-        \item In Haskell: \texttt{data Maybe a = Nothing | Just a}
-        \item In C\#: \texttt{Nullable<T>} or \texttt{T?}
-        \item In C manually:\\ \texttt{struct \{ uint8\_t error\_code; uint32\_t value; \}}
-    \end{itemize}
-\end{itemize}
-\end{frame}
-
-
-
-\begin{frame}{Nullable types: example from SQL}
-ISO SQL (structured query language) used to interrogate RDBMS:
+\begin{frame}{Nullable types}
+The type system supports every value to be either \texttt{NULL} indicating missing data or a value.
 
 \begin{itemize}
-    \item every value can also be \texttt{NULL} (in functions) indicating missing data
-    \item functions often return either the value or \texttt{NULL} in case of error
-    \item the three-valued logic makes \texttt{NULL} behave similar as the "undefined" value. Examples:
-    \begin{itemize}
-        \item \texttt{NULL AND  TRUE → NULL}
-        \item \texttt{NULL AND FALSE → FALSE}
-        \item \texttt{NULL AND  NULL → NULL}
-        \item \texttt{NULL  OR  NULL → NULL}
-    \end{itemize}
+    \item In Python anything can be \texttt{None}
+    \item In SQL anything can be \texttt{NULL}
+    \item In Java non-primitives only (\texttt{int} no, \texttt{Integer} yes): \textit{Null object pattern}
+    \item In C works only with pointers
 \end{itemize}
 \end{frame}
 
@@ -735,6 +730,24 @@ int main() {
 
 
 
+\begin{frame}{Nullable types: example from SQL}
+ISO SQL (structured query language) used to interrogate RDBMS:
+
+\begin{itemize}
+    \item every value can also be \texttt{NULL} indicating missing data
+    \item functions often return either the value or \texttt{NULL}
+    \item three-valued logic with \texttt{NULL} as "undefined":\\
+    \begin{itemize}
+        \item \texttt{NULL AND  TRUE → NULL}
+        \item \texttt{NULL AND FALSE → FALSE}
+        \item \texttt{NULL AND  NULL → NULL}
+        \item \texttt{NULL  OR  NULL → NULL}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
 \begin{frame}[fragile]{A simple pointer: consequences}
 \begin{itemize}
     \item[\good] Embedded in most programming languages
@@ -748,11 +761,29 @@ int main() {
 
 
 
+\begin{frame}[fragile]{Option(al) types}
+Polymorphic type representing a value that may or may not have meaning. Mostly functional languages.
+\begin{itemize}
+    \item In Rust: \texttt{enum Option<T> \{ None, Some(T) \}}
+    \item In Haskell: \texttt{data Maybe a = Nothing | Just a}
+    \item In C\#: \texttt{Nullable<T>} or \texttt{T?}
+    \item In C: manually...
+\begin{lstlisting}[style=cstyle]
+struct optional_uint32 {
+    uint8_t error_code;  // Indicate if the value makes sense
+    uint32_t value;      // Actual value
+};
+\end{lstlisting}
+\end{itemize}
+\end{frame}
+
+
+
 \begin{frame}{IEEE 754 floating-point values}
 The IEEE encoding of the real numbers has embedded handling of special cases.
 
 \begin{itemize}
-    \item \( + \infty \)
+    \item \( + \infty \)\\
     \begin{itemize}
         \item division by (positive) zero: \texttt{1.0/0.0}
         \item overflows: \texttt{pow(10.0, 500.0)}
@@ -760,7 +791,7 @@ The IEEE encoding of the real numbers has embedded handling of special cases.
         \item to check: \texttt{isinf(value) \&\& value > 0}
     \end{itemize}
 
-    \item \( - \infty \)
+    \item \( - \infty \)\\
     \begin{itemize}
         \item division of negative value by zero: \texttt{-1.0/0.0}
         \item or by negative zero: \texttt{1.0/-0.0}
@@ -775,7 +806,7 @@ The IEEE encoding of the real numbers has embedded handling of special cases.
 
 \begin{frame}{IEEE 754 floating-point values (cont.)}
 \begin{itemize}
-    \item \texttt{NaN} (Not a Number)
+    \item \texttt{NaN} (Not a Number)\\
     \begin{itemize}
         \item invalid operations
         \begin{itemize}
