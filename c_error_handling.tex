@@ -486,7 +486,6 @@ rx_code_t receive_message(message_t* message) {
 \begin{lstlisting}[style=cstyle]
 rx_code_t receive_message(message_t* message) {
     receiver_config_t config;  rx_code_t error_code;
-    
     do {
         error_code = load_receiver_config_from_storage(&config);
         if (error_code) { break; }
@@ -511,7 +510,6 @@ rx_code_t receive_message(message_t* message) {
 \begin{lstlisting}[style=cstyle]
 rx_code_t receive_message(message_t* message) {
     receiver_config_t config;  rx_code_t error_code;
-    
     error_code = load_receiver_config_from_storage(&config);
     if (error_code) { goto terminate; }
     for (int i = 0; i < 10; i++) {
@@ -829,7 +827,6 @@ void longjmp (jmp_buf env, int val);
 #include <setjmp.h>
 
 static jmp_buf state;
-
 typedef enum {
     OK = 0,
     NEGATIVE_VALUE = 1,
