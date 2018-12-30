@@ -85,19 +85,6 @@ In OOP languages we commonly have the \textbf{Exception} classes used to handle:
 
 
 
-\begin{frame}{Control flow break}
-When an Exception object is raised/thrown:
-\begin{itemize}
-    \item breaks the execution flow
-    \item makes the current function return early
-    \item repeats the same on every function in the stack towards the \texttt{main()}
-    \item stops if caught by a \texttt{try-catch} block
-    \item or makes the program crash
-\end{itemize}
-\end{frame}
-
-
-
 \begin{frame}{Advantages of exceptions}
 \begin{itemize}
     \item Biggest advantage: break of the control flow
@@ -107,15 +94,6 @@ When an Exception object is raised/thrown:
         \item error-handling behaviour
     \end{itemize}
     \item It's nicer to read
-\end{itemize}
-\end{frame}
-
-
-
-\begin{frame}{From \textit{Clean Code} by Robert C. Martin}
-\begin{itemize}
-    \item \textit{\quotes{Returning error codes from command functions is a subtle violation of command query separation.}}
-    \item \textbf{Command query separation}: \textit{\quotes{functions should either do something or answer something, but not both. Either your function should change the state of an object [command], or it should return some information about that object [query]. Doing both often leads to confusion.}}
 \end{itemize}
 \end{frame}
 
@@ -231,26 +209,6 @@ int receive_message(message_t* message);
     \item[\bad] Can we retry or not? Maybe with different settings?
     \item[\bad] Confusing: does \texttt{false} indicate \quotes{no error} or \quotes{no success}?
 \end{itemize}
-\end{frame}
-
-
-
-\begin{frame}[fragile]{Boolean return code: usage examples}
-\begin{lstlisting}[style=cstyle]
-message_t rx_message;
-if (!receive_message(&rx_message)) {
-    puts("Reception failure");
-}
-\end{lstlisting}
-
-\begin{lstlisting}[style=cstyle]
-message_t rx_message;
-while (!receive_message(&rx_message)) {
-    sleep(5);
-}
-\end{lstlisting}
-
-Hard to remember if the negation is needed or not.
 \end{frame}
 
 
@@ -717,24 +675,6 @@ The language's type system supports every value to be either \texttt{NULL}-like 
     \item In SQL anything can be \texttt{NULL}
     \item In Java non-primitives only (\texttt{int} no, \texttt{Integer} yes): \textit{Null object pattern}
     \item In C works only with pointers
-\end{itemize}
-\end{frame}
-
-
-
-\begin{frame}{Nullable types: example from SQL}
-ISO SQL (structured query language) used to interrogate RDBMS:
-
-\begin{itemize}
-    \item every value can also be \texttt{NULL} indicating missing data
-    \item functions often return either the value or \texttt{NULL}
-    \item three-valued logic with \texttt{NULL} as "undefined":\\
-    \begin{itemize}
-        \item \texttt{NULL AND  TRUE → NULL}
-        \item \texttt{NULL AND FALSE → FALSE}
-        \item \texttt{NULL AND  NULL → NULL}
-        \item \texttt{NULL  OR  NULL → NULL}
-    \end{itemize}
 \end{itemize}
 \end{frame}
 
