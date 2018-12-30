@@ -284,10 +284,10 @@ rx_code_t receive_message(message_t* message);
     \item[\good] Can also be used in binary/encoded/serialized messages
                  \begin{small}
 \begin{lstlisting}[style=cstyle]
-struct {
-    uint8_t error_code;  // Indicate if the value makes sense
+typedef struct {
+    uint32_t error_code; // Indicate if the value makes sense
     uint32_t value;      // Value to transmit
-}
+} packed_value_t;
 \end{lstlisting}
                  \end{small}
     \item[\good] \textbf{Arguably the most common pattern} outside of \texttt{libc}
@@ -516,7 +516,7 @@ Common solutions: break abstraction layers
 
 \section{Code style\\ for return codes}
 
-\begin{frame}[fragile]{Stopping the execution flow with error codes}
+\begin{frame}[fragile]{Stopping flow with multiple returns}
 \begin{lstlisting}[style=cstyle]
 rx_code_t receive_message(message_t* message) {
     receiver_config_t config;  rx_code_t error_code;
@@ -535,7 +535,7 @@ rx_code_t receive_message(message_t* message) {
 
 
 
-\begin{frame}[fragile]{With \texttt{while(0)}}
+\begin{frame}[fragile]{With \texttt{do-while(0)} is nicer}
 \begin{lstlisting}[style=cstyle]
 rx_code_t receive_message(message_t* message) {
     receiver_config_t config;  rx_code_t error_code;
@@ -556,7 +556,7 @@ rx_code_t receive_message(message_t* message) {
 
 
 
-\begin{frame}[fragile]{Loops inside \texttt{while(0)}}
+\begin{frame}[fragile]{Loops inside \texttt{do-while(0)} don't work}
 \begin{lstlisting}[style=cstyle]
 rx_code_t receive_message(message_t* message) {
     receiver_config_t config;  rx_code_t error_code;
@@ -580,7 +580,7 @@ rx_code_t receive_message(message_t* message) {
 
 
 
-\begin{frame}[fragile]{With \texttt{goto}}
+\begin{frame}[fragile]{With \texttt{goto} works always}
 \begin{lstlisting}[style=cstyle]
 rx_code_t receive_message(message_t* message) {
     receiver_config_t config;  rx_code_t error_code;
@@ -618,6 +618,14 @@ rx_code_t receive_message(message_t* message) {
 
 
 
+\begin{frame}{Comparing various code styles}
+\begin{itemize}
+    \item Multiple return codes: clear when writing, confusing to read. Not allowed by certain industry standards (e.g. automotive).
+    \item \texttt{do-while(0)} is clear for simple cases after getting used to it
+    \item \texttt{goto} is clear only when used correctly and only for this kind of handling
+\end{itemize}
+\end{frame}
+
 
 
 \section{Using the return value's domain}
@@ -627,7 +635,7 @@ rx_code_t receive_message(message_t* message) {
 \begin{itemize}
     \item The function returns a value, not a return code.
     \item The value has a limited domain.
-    \item When out of bounds, indicates an error.
+    \item When value out of bounds, indicates an error.
 \end{itemize}
 
 Example: writing formatted strings to a file.
@@ -644,7 +652,7 @@ Returns the number of characters written: 0 or more. \textbf{Negative on failure
 \begin{frame}[fragile]{Outside the domain: consequences}
 \begin{itemize}
     \item[\good] No need for additional enums
-    \item[\good] Easy to understand if something is wrong (e.g. negative length)
+    \item[\good] Easy to understand if something is wrong (e.g. negative length doe not make sense)
     \item[\bad] Easy to forget to check and use error value as a good result
     \item[\bad] Must read documentation of function in detail 
     \item[\bad] Not possible if no value outside the domain exists
@@ -654,7 +662,10 @@ Returns the number of characters written: 0 or more. \textbf{Negative on failure
 
 
 \begin{frame}[fragile]{Return values inside the domain}
-Also known as \textit{semipredicate problem}: how do I distinguish between a valid output and an error indicator?
+\begin{itemize}
+    \item Also known as \textit{semipredicate problem}
+    \item how do I distinguish between a valid output and an error indicator?
+\end{itemize}
 
 Example: parsing a string for an integer value.
 
@@ -831,7 +842,7 @@ The IEEE encoding of the real numbers has embedded handling of special cases.
     \item[\good] IEEE standard since decades, really every computer supports it
     \item[\good] Hardware accelerated
     \item[\good] No need for pointer dereferencing or checking a separate error code
-    \item[\bad] Easy to forget to check with \texttt{isfinite()} in critical sections
+    \item[\bad] Easy to forget to check with \texttt{isfinite()}
 \end{itemize}
 \end{frame}
 
