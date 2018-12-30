@@ -45,6 +45,7 @@
 \begin{enumerate}
     \item A brief recap over Exceptions
     \item Return codes
+    \item Code style for return codes
     \item Using the return value's domain
     \item Embedded error indicator in value
     \item \texttt{<errno.h>}
@@ -433,7 +434,7 @@ rx_code_t receive_message(message_t* message) {
 
 
 
-\section{A note on the code style}
+\section{Code style\\ for return codes}
 
 \begin{frame}[fragile]{Stopping the execution flow with error codes}
 \begin{lstlisting}[style=cstyle]

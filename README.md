@@ -6,6 +6,18 @@ languages that do not support Exceptions, using mainly examples
 from ISO C.
 
 
+Topics
+----------------------------------------
+
+- A brief recap over Exceptions
+- Return codes
+- Code style for return codes
+- Using the return value's domain
+- Embedded error indicator in value
+- `<errno.h>`
+- `<setjmp.h>`
+
+
 License
 ----------------------------------------
 
