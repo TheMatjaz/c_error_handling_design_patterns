@@ -59,7 +59,7 @@
     \end{enumerate}
     \item Code style for return codes
     \item Using the return value's domain
-    \item Embedded error indicator in value
+    \item Embedded error indicator in data type
     \item \texttt{<errno.h>}
     \item \texttt{<setjmp.h>}
 \end{enumerate}
@@ -150,7 +150,7 @@ def update_software():
 \begin{frame}{But...}
 \begin{itemize}
     \item Many programming languages were created before OOP was even a thing (duh...)
-    \item Examples: Fortran, C, Cobol, Pascal or the more modern Rust
+    \item Examples: Fortran, C, Cobol, ... or the more modern Rust
     \item Other patterns took place, still in use today
     \item Main difference: \textbf{the control flow is not broken!} Manual handling is required.
     \item \textit{\quotes{If a tree falls in a forest and no one is around to hear it, does it make a sound?}}
@@ -179,7 +179,7 @@ def update_software():
         \item Status/state codes
     \end{enumerate}
     \item Using the return value's domain
-    \item Embedded error indicator in value
+    \item Embedded error indicator in data type
     \item \texttt{<errno.h>}
     \item \texttt{<setjmp.h>}
 \end{enumerate}
@@ -483,7 +483,7 @@ rx_code_t receive_message(message_t* message) {
 \begin{itemize}
     \item Returning the inner error code \texttt{encoding\_error} breaks abstraction layers
     \item Returning the outer error code \texttt{reception\_error} may hide details
-    \item Using only one \texttt{enum} to contain also encoding errors may need too many values (but commonly done as easy to handle)
+    \item Using only one \texttt{enum} for everything: very big enum?
     \item Combining the error code into a concatenated integer leads to confusion
 \end{itemize}
 \end{frame}
@@ -501,9 +501,9 @@ Common solutions: break abstraction layers
     \end{itemize}
     \item Or combined error code\\
     \begin{itemize}
-        \item Example: ISO/IEC 7816 for smart cards uses \texttt{uint32}
-        \item 2 MS bytes for category (where failed)
-        \item 2 LS bytes for reason (what failed)
+        \item Example: ISO/IEC 7816 for smart cards uses \texttt{uint16}
+        \item High byte for category (where failed)
+        \item Low byte for reason (what failed)
         \item 0x9000 = OK\\
         0x69xx = Something with the command\\
         0x6900 = Command not allowed\\
@@ -707,7 +707,7 @@ But: \texttt{strtol()} sets second parameter \texttt{endptr} to first char after
 
 
 
-\section{Embedded error indicator in value}
+\section{Embedded error indicator in data type}
 
 \begin{frame}{Nullable types}
 The language's type system supports every value to be either \texttt{NULL}-like indicating missing data or a value.
@@ -767,6 +767,7 @@ int main() {
     \item[\good] Every programmer understands: cannot work on \texttt{NULL}
     \item[\good] No need for checking a separate error code
     \item[\bad] Very easy to forget to check and dereference \texttt{NULL} (auch!)
+    \item[\bad] Dereferencing may be too slow
     \item[\meh] In embedded environments may be possible work due to missing \texttt{malloc()}
     \item[\meh] May make the code less readable (\texttt{int*} vs \texttt{int})
 \end{itemize}
