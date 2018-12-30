@@ -93,7 +93,7 @@ In OOP languages we commonly have the \textbf{Exception} classes used to handle:
         \item nominal behaviour
         \item error-handling behaviour
     \end{itemize}
-    \item It's nicer to read
+    \item Nicer to read
 \end{itemize}
 \end{frame}
 
@@ -131,7 +131,6 @@ def update_software():
     \item Examples: Fortran, C, Cobol, ... or the more modern Rust
     \item Other patterns took place, still in use today
     \item Main difference: \textbf{the control flow is not broken!} Manual handling is required.
-    \item \textit{\quotes{If a tree falls in a forest and no one is around to hear it, does it make a sound?}}
 \end{itemize}
 \end{frame}
 
@@ -577,7 +576,7 @@ rx_code_t receive_message(message_t* message) {
 
 
 
-\begin{frame}{Comparing various code styles}
+\begin{frame}{Comparing various "returning" styles}
 \begin{itemize}
     \item Multiple \texttt{return}: clear when writing, confusing to read. Not allowed by certain industry standards (e.g. automotive).
     \item \texttt{do-while(0)} is clear for simple cases after getting used to it
@@ -929,7 +928,7 @@ int main() {
 
 \begin{frame}{Wrapping up}
 \begin{itemize}
-    \item If your programming language supports nullable/option types: use them
+    \item If your programming language supports exceptions or nullable/option types: use them
     \item Otherwise go with return error codes or flags: 0 for OK, other values for error cases
     \item Write the error handling code with care, focus on \textbf{readability}
 \end{itemize}
