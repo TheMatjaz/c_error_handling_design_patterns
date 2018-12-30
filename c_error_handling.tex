@@ -516,7 +516,7 @@ Common solutions: break abstraction layers
 
 \section{Code style\\ for return codes}
 
-\begin{frame}[fragile]{Stopping flow with multiple returns}
+\begin{frame}[fragile]{Stopping flow with multiple \texttt{return}}
 \begin{lstlisting}[style=cstyle]
 rx_code_t receive_message(message_t* message) {
     receiver_config_t config;  rx_code_t error_code;
@@ -620,7 +620,7 @@ rx_code_t receive_message(message_t* message) {
 
 \begin{frame}{Comparing various code styles}
 \begin{itemize}
-    \item Multiple return codes: clear when writing, confusing to read. Not allowed by certain industry standards (e.g. automotive).
+    \item Multiple \texttt{return}: clear when writing, confusing to read. Not allowed by certain industry standards (e.g. automotive).
     \item \texttt{do-while(0)} is clear for simple cases after getting used to it
     \item \texttt{goto} is clear only when used correctly and only for this kind of handling
 \end{itemize}
@@ -644,7 +644,8 @@ Example: writing formatted strings to a file.
 int fprintf ( FILE * stream, const char * format, ... );
 \end{lstlisting}
 
-Returns the number of characters written: 0 or more. \textbf{Negative on failure}. 
+Returns the amount of characters written: 0 or more.\\
+\textbf{Negative on failure}. 
 \end{frame}
 
 
@@ -652,7 +653,7 @@ Returns the number of characters written: 0 or more. \textbf{Negative on failure
 \begin{frame}[fragile]{Outside the domain: consequences}
 \begin{itemize}
     \item[\good] No need for additional enums
-    \item[\good] Easy to understand if something is wrong (e.g. negative length doe not make sense)
+    \item[\good] Easy to understand if something is wrong (e.g. negative length does not make sense)
     \item[\bad] Easy to forget to check and use error value as a good result
     \item[\bad] Must read documentation of function in detail 
     \item[\bad] Not possible if no value outside the domain exists
@@ -673,7 +674,8 @@ Example: parsing a string for an integer value.
 long int strtol (const char* str, char** endptr, int base);
 \end{lstlisting}
 
-Returns the converted integer. If no valid conversion could be performed, returns 0.
+Returns the converted integer.\\
+If no valid conversion could be performed, \textbf{returns 0}.
 \end{frame}
 
 
@@ -708,13 +710,31 @@ But: \texttt{strtol()} sets second parameter \texttt{endptr} to first char after
 \section{Embedded error indicator in value}
 
 \begin{frame}{Nullable types}
-The type system supports every value to be either \texttt{NULL} indicating missing data or a value.
+The language's type system supports every value to be either \texttt{NULL}-like indicating missing data or a value.
 
 \begin{itemize}
     \item In Python anything can be \texttt{None}
     \item In SQL anything can be \texttt{NULL}
     \item In Java non-primitives only (\texttt{int} no, \texttt{Integer} yes): \textit{Null object pattern}
     \item In C works only with pointers
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Nullable types: example from SQL}
+ISO SQL (structured query language) used to interrogate RDBMS:
+
+\begin{itemize}
+    \item every value can also be \texttt{NULL} indicating missing data
+    \item functions often return either the value or \texttt{NULL}
+    \item three-valued logic with \texttt{NULL} as "undefined":\\
+    \begin{itemize}
+        \item \texttt{NULL AND  TRUE → NULL}
+        \item \texttt{NULL AND FALSE → FALSE}
+        \item \texttt{NULL AND  NULL → NULL}
+        \item \texttt{NULL  OR  NULL → NULL}
+    \end{itemize}
 \end{itemize}
 \end{frame}
 
@@ -741,30 +761,12 @@ int main() {
 
 
 
-\begin{frame}{Nullable types: example from SQL}
-ISO SQL (structured query language) used to interrogate RDBMS:
-
-\begin{itemize}
-    \item every value can also be \texttt{NULL} indicating missing data
-    \item functions often return either the value or \texttt{NULL}
-    \item three-valued logic with \texttt{NULL} as "undefined":\\
-    \begin{itemize}
-        \item \texttt{NULL AND  TRUE → NULL}
-        \item \texttt{NULL AND FALSE → FALSE}
-        \item \texttt{NULL AND  NULL → NULL}
-        \item \texttt{NULL  OR  NULL → NULL}
-    \end{itemize}
-\end{itemize}
-\end{frame}
-
-
-
 \begin{frame}[fragile]{A simple pointer: consequences}
 \begin{itemize}
     \item[\good] Embedded in most programming languages
     \item[\good] Every programmer understands: cannot work on \texttt{NULL}
     \item[\good] No need for checking a separate error code
-    \item[\bad] Very to forget to check and dereference \texttt{NULL}
+    \item[\bad] Very easy to forget to check and dereference \texttt{NULL} (auch!)
     \item[\meh] In embedded environments may be possible work due to missing \texttt{malloc()}
     \item[\meh] May make the code less readable (\texttt{int*} vs \texttt{int})
 \end{itemize}
@@ -972,7 +974,7 @@ int main() {
     \item[\good] Breaking control flow
     \item[\good] Good performance (avoiding functions return calls)
     \item[\good] A way to implement exception-like behaviour
-    \item[\bad] Like \texttt{goto} but worse: may be very confusing
+    \item[\bad] Like \texttt{goto} but worse: may be \textbf{very} confusing
     \item[\bad] Often readability is more important than premature optimization
 \end{itemize}
 \end{frame}
@@ -985,9 +987,9 @@ int main() {
 
 \begin{frame}{Wrapping up}
 \begin{itemize}
-    \item If your programming language supports option types: use them
-    \item Otherwise go with return error codes: 0 for OK, other values for error cases
-    \item Write the error handling code with care, focus on readability
+    \item If your programming language supports nullable/option types: use them
+    \item Otherwise go with return error codes or flags: 0 for OK, other values for error cases
+    \item Write the error handling code with care, focus on \textbf{readability}
 \end{itemize}
 \end{frame}
 
