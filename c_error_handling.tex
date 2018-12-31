@@ -337,7 +337,7 @@ In addition to the consequences of Error codes:
 \begin{frame}[fragile]{Nested return codes problem}
 \begin{lstlisting}[style=cstyle]
 tx_code_t transmit_message(message_t* message) {
-    tx_code_t tx_error = RX_OK;
+    tx_code_t tx_error = TX_OK;
     encoding_code_t encoding_error = ENC_OK;
     
     encoding_error = prepare_message(message);
@@ -362,26 +362,66 @@ tx_code_t transmit_message(message_t* message) {
 
 
 
-\begin{frame}{Nested return codes problem (cont.)}
-Common solutions: break abstraction layers
+\begin{frame}[fragile]{Nested return codes: solution 1}
+One huge \texttt{enum} containing every possible error\\
+(Example: SQLite < v3.3.8)
 
-\begin{itemize}
-    \item Either one huge \texttt{enum} containing every possible error\\
-    \begin{itemize}
-        \item Each function inside the library uses the same error code data type
-        \item Just returning it to the upper layer
-    \end{itemize}
-    \item Or combined error code\\
-    \begin{itemize}
-        \item Example: ISO/IEC 7816 for smart cards uses \texttt{uint16}
-        \item High byte for category (where failed)
-        \item Low byte for reason (what failed)
-        \item 0x9000 = OK\\
-        0x69xx = Something with the command\\
-        0x6900 = Command not allowed\\
-        0x6981 = Command not compatible with data structure
-    \end{itemize}
-\end{itemize}
+\begin{lstlisting}[style=cstyle]
+typedef enum {
+    TX_OK = 0,
+    ERROR_ENCODING_HEADER,
+    ERROR_ENCODING_BODY,
+    ERROR_WRONG_CONFIGURATION,
+    ERROR_ANTENNA_DISCONNECTED,
+} tx_code_t;
+
+tx_code_t transmit_message(message_t* message) {
+    tx_code_t tx_error = RX_OK;
+    
+    tx_error = prepare_message(message);
+    if (encoding_error) { return tx_error; }
+    ...
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]{Nested return codes: solution 2}
+Combined error codes (Example: ISO/IEC 7816 for smart cards)
+
+\begin{minipage}[t]{0.3\textwidth}
+\begin{lstlisting}[style=cstyle]
+typedef enum {
+    TX_OK = 0,
+    ERR_ENCODING,
+    ERR_ANTENNA,
+} tx_categ_t;
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}[t]{0.3\textwidth}
+\begin{lstlisting}[style=cstyle]
+typedef enum {
+    ENC_OK = 0,
+    ENC_HEADER,
+    ENC_BODY,
+} tx_encoding_t;
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}[t]{0.3\textwidth}
+\begin{lstlisting}[style=cstyle]
+typedef enum {
+    ANT_OK = 0,
+    ANT_DISCONN,
+} tx_antenna_t;
+\end{lstlisting}
+\end{minipage}
+
+\begin{lstlisting}[style=cstyle]
+uint16_t transmit_message(message_t* message) {
+    uint8_t tx_error_low = 0;
+    tx_error_low = prepare_message(message);
+    if (tx_error_low) { return (ERR_ENCODING<<8) | tx_error_low; }
+    ...
+\end{lstlisting}
 \end{frame}
 
 
