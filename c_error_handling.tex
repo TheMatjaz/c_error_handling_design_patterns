@@ -56,11 +56,11 @@
         \item Error codes
         \item Error flags
     \end{enumerate}
-    \item Code design choices with return codes
     \item Using the return value's domain
     \item Embedded error indicator in data type
     \item \texttt{<errno.h>}
     \item \texttt{<setjmp.h>}
+    \item Code design choices with return codes
 \end{enumerate}
 
 \textbf{Note}: it will be very code-based and development-focused
@@ -152,7 +152,7 @@ def update_software():
 \begin{frame}{Return codes}
 \begin{itemize}
     \item The function's return value indicates its execution success or failure
-    \item Different levels of detail in the output
+    \item Different levels of detail
     \item A potential way to categorize them\footnote{This is just my proposal, as often all these terms are used interchangeably}\\
     \begin{enumerate}
         \item Boolean codes
@@ -327,212 +327,6 @@ In addition to the consequences of Error codes:
 \end{frame}
 
 
-
-
-
-\section{Code design choices with return codes}
-
-\begin{frame}[fragile]{Nested return codes problem}
-\begin{lstlisting}[style=cstyle]
-tx_code_t transmit_message(message_t* message) {
-    tx_code_t tx_error = TX_OK;
-    encoding_code_t encoding_error = ENC_OK;
-    
-    encoding_error = prepare_message(message);
-    if (encoding_error) {
-        return ???;  // Which error code should we return?
-    }
-    ...
-}
-\end{lstlisting}
-\end{frame}
-
-
-
-\begin{frame}{Nested return codes problem (cont.)}
-\begin{itemize}
-    \item Returning the inner error code \texttt{encoding\_error} breaks abstraction layers
-    \item Returning the outer error code \texttt{tx\_error} may hide details
-    \item Using only one \texttt{enum} for everything: very big enum?
-    \item Combining the error code into a concatenated integer leads to confusion
-\end{itemize}
-\end{frame}
-
-
-
-\begin{frame}[fragile]{Nested return codes: solution 1}
-One huge \texttt{enum} containing every possible error\\
-(Example: SQLite < v3.3.8)
-
-\begin{lstlisting}[style=cstyle]
-typedef enum {
-    TX_OK = 0,
-    ERROR_ENCODING_HEADER,
-    ERROR_ENCODING_BODY,
-    ERROR_WRONG_CONFIGURATION,
-    ERROR_ANTENNA_DISCONNECTED,
-} tx_code_t;
-
-tx_code_t transmit_message(message_t* message) {
-    tx_code_t tx_error = RX_OK;
-    
-    tx_error = prepare_message(message);
-    if (encoding_error) { return tx_error; }
-    ...
-\end{lstlisting}
-\end{frame}
-
-
-\begin{frame}[fragile]{Nested return codes: solution 2}
-Combined error codes (Example: ISO/IEC 7816 for smart cards)
-
-\begin{minipage}[t]{0.3\textwidth}
-\begin{lstlisting}[style=cstyle]
-typedef enum {
-    TX_OK = 0,
-    ERR_ENCODING,
-    ERR_ANTENNA,
-} tx_categ_t;
-\end{lstlisting}
-\end{minipage}
-\begin{minipage}[t]{0.3\textwidth}
-\begin{lstlisting}[style=cstyle]
-typedef enum {
-    ENC_OK = 0,
-    ENC_HEADER,
-    ENC_BODY,
-} tx_encoding_t;
-\end{lstlisting}
-\end{minipage}
-\begin{minipage}[t]{0.3\textwidth}
-\begin{lstlisting}[style=cstyle]
-typedef enum {
-    ANT_OK = 0,
-    ANT_DISCONN,
-} tx_antenna_t;
-\end{lstlisting}
-\end{minipage}
-
-\begin{lstlisting}[style=cstyle]
-uint16_t transmit_message(message_t* message) {
-    uint8_t tx_error_low = 0;
-    tx_error_low = prepare_message(message);
-    if (tx_error_low) { return (ERR_ENCODING<<8) | tx_error_low; }
-    ...
-\end{lstlisting}
-\end{frame}
-
-
-
-\begin{frame}[fragile]{Stopping flow with multiple \texttt{return}}
-\begin{lstlisting}[style=cstyle]
-rx_code_t receive_message(message_t* message) {
-    receiver_config_t config;  rx_code_t error_code;
-    
-    error_code = load_receiver_config_from_storage(&config);
-    if (error_code) return error_code;  // Bad, missing brackets
-    error_code = receiver_enable_peripheral();
-    if (error_code) { return error_code; }  // Always use brackets
-    error_code = receiver_configure(&config);
-    if (error_code) { return error_code; }
-    error_code = receiver_receive(message);
-    return error_code;
-}
-\end{lstlisting}
-\end{frame}
-
-
-
-\begin{frame}[fragile]{With \texttt{do-while(0)} is nicer}
-\begin{lstlisting}[style=cstyle]
-rx_code_t receive_message(message_t* message) {
-    receiver_config_t config;  rx_code_t error_code;
-    
-    do {
-        error_code = load_receiver_config_from_storage(&config);
-        if (error_code) { break; }
-        error_code = receiver_enable_peripheral();
-        if (error_code) { break; }
-        error_code = receiver_configure(&config);
-        if (error_code) { break; }
-        error_code = receiver_receive(message);
-    } while (0);
-    return error_code;
-}
-\end{lstlisting}
-\end{frame}
-
-
-
-\begin{frame}[fragile]{Loops inside \texttt{do-while(0)} don't work}
-\begin{lstlisting}[style=cstyle]
-rx_code_t receive_message(message_t* message) {
-    receiver_config_t config;  rx_code_t error_code;
-    do {
-        error_code = load_receiver_config_from_storage(&config);
-        if (error_code) { break; }
-        for (int i = 0; i < 10; i++) {
-            // Activate 10 peripherals
-            error_code = receiver_enable_peripheral(i);
-            if (error_code) { break; }
-            // The break exits the for loop, not the while(0)
-        }
-        error_code = receiver_configure(&config);
-        if (error_code) { break; }
-        error_code = receiver_receive(message);
-    } while (0);
-    return error_code;
-}
-\end{lstlisting}
-\end{frame}
-
-
-
-\begin{frame}[fragile]{With \texttt{goto} works always}
-\begin{lstlisting}[style=cstyle]
-rx_code_t receive_message(message_t* message) {
-    receiver_config_t config;  rx_code_t error_code;
-    error_code = load_receiver_config_from_storage(&config);
-    if (error_code) { goto terminate; }
-    for (int i = 0; i < 10; i++) {
-        // Activate 10 peripherals
-        error_code = receiver_enable_peripheral(i);
-        if (error_code) { goto terminate; }
-    }
-    error_code = receiver_configure(&config);
-    if (error_code) { goto terminate; }
-    error_code = receiver_receive(message);
-    
-    terminate: {
-        return error_code;
-    }
-}
-\end{lstlisting}
-\end{frame}
-
-
-
-\begin{frame}{My personal rules for \texttt{goto}}
-\begin{enumerate}
-    \item Avoid it, if you can.
-    \item Use only \textbf{one label per function} with a clear name:\\
-        \begin{itemize}
-            \item Good: \texttt{goto termination}, \texttt{goto error\_handling}
-            \item Bad: \texttt{goto failure}  (Does it jump to a failing point or handles a failure?)
-        \end{itemize}
-    \item Only jump \textbf{downwards in the code} (i.e. skip some instruction, don’t cycle them). Better if only to the function's end (to the \texttt{return} call).
-\end{enumerate}
-\end{frame}
-
-
-
-\begin{frame}{Comparing various "returning" styles}
-\begin{itemize}
-    \item Multiple \texttt{return}: clear when writing, confusing to read. Not allowed by certain industry standards (e.g. automotive).
-    \item \texttt{do-while(0)} is clear for simple cases after getting used to it
-    \item \texttt{goto} is clear only when used correctly and only for this kind of handling
-\end{itemize}
-\end{frame}
 
 
 
@@ -867,6 +661,216 @@ int main() {
     \item[\good] A way to implement exception-like behaviour
     \item[\bad] Like \texttt{goto} but worse: may be \textbf{very} confusing
     \item[\bad] Often readability is more important than premature optimization
+\end{itemize}
+\end{frame}
+
+
+
+
+
+
+\section{Code design choices with return codes}
+
+\begin{frame}[fragile]{Nested return codes problem}
+\begin{lstlisting}[style=cstyle]
+tx_code_t transmit_message(message_t* message) {
+    tx_code_t tx_error = TX_OK;
+    encoding_code_t encoding_error = ENC_OK;
+    
+    encoding_error = prepare_message(message);
+    if (encoding_error) {
+        return ???;  // Which error code should we return?
+    }
+    ...
+}
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}{Nested return codes problem (cont.)}
+\begin{itemize}
+    \item Returning the inner error code \texttt{encoding\_error} breaks abstraction layers
+    \item Returning the outer error code \texttt{tx\_error} may hide details
+    \item Using only one \texttt{enum} for everything: very big enum?
+    \item Combining the error code into a concatenated integer leads to confusion
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Nested return codes: solution 1}
+One huge \texttt{enum} containing every possible error\\
+(Example: SQLite < v3.3.8)
+
+\begin{lstlisting}[style=cstyle]
+typedef enum {
+    TX_OK = 0,
+    ERROR_ENCODING_HEADER,
+    ERROR_ENCODING_BODY,
+    ERROR_WRONG_CONFIGURATION,
+    ERROR_ANTENNA_DISCONNECTED,
+} tx_code_t;
+
+tx_code_t transmit_message(message_t* message) {
+    tx_code_t tx_error = RX_OK;
+    
+    tx_error = prepare_message(message);
+    if (tx_error) { return tx_error; }
+    ...
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]{Nested return codes: solution 2}
+Combined error codes\\
+(Example: ISO/IEC 7816 for smart cards)
+
+\begin{minipage}[t]{0.3\textwidth}
+\begin{lstlisting}[style=cstyle]
+typedef enum {
+    TX_OK = 0,
+    ERR_ENCODING,
+    ERR_ANTENNA,
+} tx_categ_t;
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}[t]{0.3\textwidth}
+\begin{lstlisting}[style=cstyle]
+typedef enum {
+    ENC_OK = 0,
+    ENC_HEADER,
+    ENC_BODY,
+} tx_encoding_t;
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}[t]{0.3\textwidth}
+\begin{lstlisting}[style=cstyle]
+typedef enum {
+    ANT_OK = 0,
+    ANT_DISCONN,
+} tx_antenna_t;
+\end{lstlisting}
+\end{minipage}
+
+\begin{lstlisting}[style=cstyle]
+uint16_t transmit_message(message_t* message) {
+    uint8_t tx_error_low = 0;
+    tx_error_low = prepare_message(message);
+    if (tx_error_low) { return (ERR_ENCODING<<8) | tx_error_low; }
+    ...
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Stopping flow with multiple \texttt{return}}
+\begin{lstlisting}[style=cstyle]
+rx_code_t receive_message(message_t* message) {
+    receiver_config_t config;  rx_code_t error_code;
+    
+    error_code = load_receiver_config_from_storage(&config);
+    if (error_code) return error_code;  // Bad, missing brackets
+    error_code = receiver_enable_peripheral();
+    if (error_code) { return error_code; }  // Always use brackets
+    error_code = receiver_configure(&config);
+    if (error_code) { return error_code; }
+    error_code = receiver_receive(message);
+    return error_code;
+}
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{With \texttt{do-while(0)} is nicer}
+\begin{lstlisting}[style=cstyle]
+rx_code_t receive_message(message_t* message) {
+    receiver_config_t config;  rx_code_t error_code;
+    
+    do {
+        error_code = load_receiver_config_from_storage(&config);
+        if (error_code) { break; }
+        error_code = receiver_enable_peripheral();
+        if (error_code) { break; }
+        error_code = receiver_configure(&config);
+        if (error_code) { break; }
+        error_code = receiver_receive(message);
+    } while (0);
+    return error_code;
+}
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Loops inside \texttt{do-while(0)} don't work}
+\begin{lstlisting}[style=cstyle]
+rx_code_t receive_message(message_t* message) {
+    receiver_config_t config;  rx_code_t error_code;
+    do {
+        error_code = load_receiver_config_from_storage(&config);
+        if (error_code) { break; }
+        for (int i = 0; i < 10; i++) {
+            // Activate 10 peripherals
+            error_code = receiver_enable_peripheral(i);
+            if (error_code) { break; }
+            // The break exits the for loop, not the while(0)
+        }
+        error_code = receiver_configure(&config);
+        if (error_code) { break; }
+        error_code = receiver_receive(message);
+    } while (0);
+    return error_code;
+}
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{With \texttt{goto} works always}
+\begin{lstlisting}[style=cstyle]
+rx_code_t receive_message(message_t* message) {
+    receiver_config_t config;  rx_code_t error_code;
+    error_code = load_receiver_config_from_storage(&config);
+    if (error_code) { goto terminate; }
+    for (int i = 0; i < 10; i++) {
+        // Activate 10 peripherals
+        error_code = receiver_enable_peripheral(i);
+        if (error_code) { goto terminate; }
+    }
+    error_code = receiver_configure(&config);
+    if (error_code) { goto terminate; }
+    error_code = receiver_receive(message);
+    
+    terminate: {
+        return error_code;
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}{My personal rules for \texttt{goto}}
+\begin{enumerate}
+    \item Avoid it, if you can.
+    \item Use only \textbf{one label per function} with a clear name:\\
+        \begin{itemize}
+            \item Good: \texttt{goto termination}, \texttt{goto error\_handling}
+            \item Bad: \texttt{goto failure}  (Does it jump to a failing point or handles a failure?)
+        \end{itemize}
+    \item Only jump \textbf{downwards in the code} (i.e. skip some instruction, don’t cycle them). Better if only to the function's end (to the \texttt{return} call).
+\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}{Comparing various "returning" styles}
+\begin{itemize}
+    \item Multiple \texttt{return}: clear when writing, confusing to read. Not allowed by certain industry standards (e.g. automotive).
+    \item \texttt{do-while(0)} is clear for simple cases after getting used to it
+    \item \texttt{goto} is clear only when used correctly and only for this kind of handling
 \end{itemize}
 \end{frame}
 
