@@ -14,12 +14,14 @@ Topics
   - Boolean codes
   - Error codes
   - Error flags
-  - Status/state codes
 - Code design choices with return codes
 - Using the return value's domain
 - Embedded error indicator in value
 - `<errno.h>`
 - `<setjmp.h>`
+
+
+**Note**: the previous versions of the document (see Git Tags) contains many more slides that were removed due to the presenting time limitation.
 
 
 License
