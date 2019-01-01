@@ -184,9 +184,9 @@ int receive_message(message_t* message);
 
 \begin{frame}[fragile]{Boolean return code: consequences}
 \begin{itemize}
+    \item[\bad] Confusing: does \texttt{false} indicate \quotes{no error} or \quotes{no success}?
     \item[\bad] Why did it fail?
     \item[\bad] Can we retry or not? Maybe with different settings?
-    \item[\bad] Confusing: does \texttt{false} indicate \quotes{no error} or \quotes{no success}?
 \end{itemize}
 \end{frame}
 
@@ -362,49 +362,6 @@ Returns the amount of characters written: 0 or more.\\
 \end{itemize}
 \end{frame}
 
-
-
-\begin{frame}[fragile]{Return values inside the domain}
-\begin{itemize}
-    \item Also known as \textit{semipredicate problem}
-    \item how do I distinguish between a valid output and an error indicator?
-\end{itemize}
-
-Example: parsing a string for an integer value.
-
-\begin{lstlisting}[style=cstyle]
-long int strtol (const char* str, char** endptr, int base);
-\end{lstlisting}
-
-Returns the converted integer.\\
-If no valid conversion could be performed, \textbf{returns 0}.
-\end{frame}
-
-
-
-\begin{frame}[fragile]{Return values inside the domain (cont.)}
-What happens if the input string contains a zero digit?
-
-\begin{lstlisting}[style=cstyle]
-strtol("12", NULL, 10); // returns 12
-
-strtol("0", NULL, 10);  // returns 0
-
-strtol("fdjkfnskxg", NULL, 10);  // returns 0 as well!
-\end{lstlisting}
-
-But: \texttt{strtol()} sets second parameter \texttt{endptr} to first char after the parsed number. On failed parsing \texttt{str == endptr}.
-\end{frame}
-
-
-
-
-\begin{frame}[fragile]{Inside the domain: consequences}
-\begin{itemize}
-    \item[\bad] Extremely confusing
-    \item[\bad] Just never ever do that
-\end{itemize}
-\end{frame}
 
 
 
