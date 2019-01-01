@@ -89,47 +89,10 @@ In OOP languages we commonly have the \textbf{Exception} classes used to handle:
     \item Biggest advantage: break of the control flow
     \item Allows separation of:\\
     \begin{itemize}
-        \item nominal behaviour
-        \item error-handling behaviour
+        \item nominal behaviour: \texttt{try} block
+        \item error-handling behaviour: \texttt{catch/except} block(s)
     \end{itemize}
     \item Nicer to read
-\end{itemize}
-\end{frame}
-
-
-
-\begin{frame}[fragile]{}
-\begin{lstlisting}[style=pythonstyle]
-def update_software():
-    completed = False
-    while not completed:
-        try:
-            update = download_latest_software_update()
-            update.check_integrity()
-            update.install()
-            completed = True
-        except ConnectionError:
-            log.error("Retrying download later.")
-            time.sleep(3600)
-        except IntegrityError:
-            log.error("Downloaded file corrupted.")
-        except InstallationError:
-            log.error("No admin rights.")
-            print("Please run the program with sudo.")
-            completed = True
-        finally:
-            update.erase_temp_files()
-\end{lstlisting}
-\end{frame}
-
-
-
-\begin{frame}{But...}
-\begin{itemize}
-    \item Many programming languages were created before OOP was even a thing (duh...)
-    \item Examples: Fortran, C, Cobol, ... or the more modern Rust
-    \item Other patterns took place, still in use today
-    \item Main difference: \textbf{the control flow is not broken!} Manual handling is required.
 \end{itemize}
 \end{frame}
 
