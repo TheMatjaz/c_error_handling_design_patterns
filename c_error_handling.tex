@@ -114,6 +114,7 @@ In OOP languages we commonly have the \textbf{Exception} classes used to handle:
 
 \begin{frame}{Return codes}
 \begin{itemize}
+    \item Also known as \textit{status codes}
     \item The function's return value indicates its execution success or failure
     \item Different levels of detail
     \item A potential way to categorize them\footnote{This is just my proposal, as often all these terms are used interchangeably}\\
@@ -277,15 +278,13 @@ rx_code_t receive_message(message_t* message);
 
 
 \begin{frame}[fragile]{Error flags: consequences}
-In addition to the consequences of Error codes:
+\textbf{In addition} to the consequences of Error codes:
 
 \begin{itemize}
     \item[\good] Useful if multiple failures can happen simultaneously
-    \item[\good] Can still be used if only one failure at the time
-    \item[\good] Easy to remember which value is the success: the \texttt{false} value
     \item[\bad] \(N\) bits indicate only \(N\) errors. Error codes indicate \(2^N - 1\). Bigger integer types may be needed.
-    \item[\bad] Even longer code handling the cases (e.g. a series of \texttt{if-if-if} but not \texttt{switch-case})
-    \item[\bad] Macros are required to group same-category flags
+    \item[\bad] Even longer code handling the cases: need to handle all possible flags independently (e.g. a series of \texttt{if-if-if} but not \texttt{switch-case})
+    \item[\bad] Sometimes macros are involved for operations on groups of flags
 \end{itemize}
 \end{frame}
 
@@ -612,8 +611,6 @@ tx_code_t transmit_message(message_t* message) {
 \begin{itemize}
     \item Returning the inner error code \texttt{encoding\_error} breaks abstraction layers
     \item Returning the outer error code \texttt{tx\_error} may hide details
-    \item Using only one \texttt{enum} for everything: very big enum?
-    \item Combining the error code into a concatenated integer leads to confusion
 \end{itemize}
 \end{frame}
 
@@ -640,6 +637,20 @@ tx_code_t transmit_message(message_t* message) {
     ...
 \end{lstlisting}
 \end{frame}
+
+
+
+\begin{frame}{Solution 1: consequences}
+\begin{itemize}
+    \item[\good] Every library function (inner and outer) returns the same data type
+    \item[\good] Easy to write library: on error, just pass error code to caller
+    \item[\good] Easy to write application: only one \texttt{enum} to handle
+    \item[\bad] Abstraction layers are broken
+    \item[\bad] Hard to understand which function from an API may return which codes
+\end{itemize}
+\end{frame}
+
+
 
 
 \begin{frame}[fragile]{Nested return codes: solution 2}
@@ -680,6 +691,18 @@ uint16_t transmit_message(message_t* message) {
     if (tx_error_low) { return (ERR_ENCODING<<8) | tx_error_low; }
     ...
 \end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}{Solution 2: consequences}
+\begin{itemize}
+    \item[\good] Abstraction layers are "less" broken: every byte is on its own layer
+    \item[\good] Easy to understand which function from an API may return which codes
+    \item[\bad] Error codes need to be combined before returning
+    \item[\bad] Error codes need to be unpacked before inspection
+    \item[\meh] The application may ignore the "more detailed byte"
+\end{itemize}
 \end{frame}
 
 
