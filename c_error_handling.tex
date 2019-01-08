@@ -92,20 +92,6 @@ In OOP languages we commonly have the \textbf{Exception} classes used to handle:
 
 
 
-\begin{frame}{Advantages of exceptions}
-\begin{itemize}
-    \item Biggest advantage: break of the control flow
-    \item Allows separation of:\\
-    \begin{itemize}
-        \item nominal behaviour: \texttt{try} block
-        \item error-handling behaviour: \texttt{catch/except} block(s)
-    \end{itemize}
-    \item Nicer to read
-\end{itemize}
-\end{frame}
-
-
-
 \begin{frame}{Problem and forces}
 \begin{itemize}
     \item Need a way to indicate to the function caller that something could not be done and why.
@@ -204,15 +190,6 @@ rx_code_t error;
 
 error = receive_message(&rx_message);
 if (error != RX_OK) {  // Simply: if (error) {...}
-    puts("Reception failure");
-}
-\end{lstlisting}
-
-\begin{lstlisting}[style=cstyle]
-message_t rx_message;
-rx_code_t rx_code;
-
-if ((rx_code = receive_message(&rx_message)) != RX_OK) {
     puts("Reception failure");
 }
 \end{lstlisting}
